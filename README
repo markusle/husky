@@ -1,6 +1,10 @@
 DESCRIPTION:
 
-husky is a command line shell for UNIX-like OS written in haskell.
-husky is released under the GPL v3.
+husky is a command line shell for UNIX-like OS written in haskell
+and released under the GPL v3.
+
+Please note that husky is currently in the very beginning stages
+of development. Please don't expect a working release to appear
+until sometime in 2009.
 
 (C) 2008 Markus Dittrich

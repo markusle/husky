@@ -22,39 +22,36 @@
 module Main where
 
 
--- local imports
-import AURConnector
-import CommandLineParser
-import DisplayFunctions
-import Updater
+-- global imports
+import Data.List
 
+-- local imports
+import ApplicativeParsec
 
 -- | main
 main :: IO ()
 main = do
 
-  -- parse command line
-  args <- getArgs
-  let (actions, _, _) = getOpt RequireOrder options args
-  opts <- foldl (>>=) ( return defaultOptions ) actions
+  -- shell prompt
+  putStrLn "husky <> "
 
-  -- extract requested action
-  let Options {
-      userRequest   = request
-    --, requestString = pattern
-    } = opts
+  -- get a line from stdin
+  input <- getLine
 
+  -- parse it
+  case parse parse_cl "" input of
+    Left _   -> putStrLn "Error: Unknown action"
+    Right cl -> mapM_ (putStr) (intersperse ":" cl)
 
-  -- dispatch
-  case request of 
-    
-    -- show status of currently installed packages
-    Status -> retrieve_info >>= display_status
-
-    -- update all presently out of data packages
-    Update -> retrieve_info >>= install_updates 
-   
-    _      -> putStrLn $ usageInfo "Usage: hark [options]\n" options  
+  main
 
 
+--data ClString = ClString String | ClStrings [String]
 
+-- | simple command line parser
+parse_cl :: CharParser () [String]
+parse_cl = spaces *> parse_strings
+
+  where
+    parse_strings :: CharParser () [String]
+    parse_strings = (many1 letter) `sepBy` spaces  
