@@ -4,7 +4,9 @@ husky is a command line shell for UNIX-like OS written in haskell
 and released under the GPL v3.
 
 Please note that husky is currently in the very beginning stages
-of development. Please don't expect a working release to appear
-until sometime in 2009.
+of development and presently used as a testbed for figuring out 
+different ways of parsing input strings via parsec. Please don't 
+expect a working release to appear until sometime end of 2009.
+
 
 (C) 2008 Markus Dittrich
