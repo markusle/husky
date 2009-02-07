@@ -20,16 +20,31 @@
 
 -- | main archy driver
 module CalculatorState ( CalcState(..)
+                       , insert_variable
+                       , get_variable
                        , defaultCalcState ) where
+
+
+-- | imports
+import qualified Data.Map as M
 
 
 -- | this data structure provides some state information
 -- to the calculator (variables, etc ...)
-data CalcState = CalcState { name :: String
-                           , value  :: Double }
+data CalcState = CalcState { varMap :: M.Map String Double }
 
 defaultCalcState :: CalcState
-defaultCalcState = CalcState { name = "" 
-                             , value = 0.0 }
+defaultCalcState = CalcState { varMap = M.empty }
 
 
+-- | function adding a new variable to the database
+insert_variable :: Double -> String -> CalcState -> CalcState
+insert_variable num name @state(CalcState { varMap = theMap }) =
+    CalcState { varMap = M.insert name num theMap } 
+
+
+-- | function retrieving a (Maybe variable_value) from the database 
+get_variable :: String -> CalcState -> Maybe Double
+get_variable name (CalcState { varMap = theMap }) =
+    M.lookup name theMap
+    

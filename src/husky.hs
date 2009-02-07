@@ -22,6 +22,7 @@
 module Main where
 
 -- imports
+import CalculatorParser
 import CalculatorState
 import TokenParser
 
@@ -47,106 +48,4 @@ parse_it state = do
           Just val -> putStrLn (show val)
 
         >> parse_it newState
-
-
--- | main parser entry point
-calculator :: CharParser CalcState (Maybe Double, CalcState)
-calculator = parse_calc 
-             >>= \val -> getState
-             >>= \state -> return (val, state)
-
-
--- | grammar description for parser
-parse_calc :: CharParser CalcState (Maybe Double)
-parse_calc =  try (add_term >>= \x -> return (Just x))
-          <|> define_variable
-          <?> "math expression, variable definition " ++
-              "or variable name"
-
-
--- | if the line starts off with a string we either
--- have a variable definition or want to show the value
--- stored in a variable
-define_variable :: CharParser CalcState (Maybe Double)
-define_variable = (spaces
-                 >> variable
-                 >>= \varName -> variable_def varName 
-                             <|> show_variable varName )
-              <?> "variable parsing"
-
-
-show_variable :: String -> CharParser CalcState (Maybe Double)
-show_variable varName = (spaces 
-                        >> getState
-                        >>= \(CalcState { name=aName
-                                        , value=aValue }) ->
-                         if varName == aName then
-                            return (Just aValue)
-                         else
-                            return Nothing )
-                     <?> "show variable"
-
-
-variable_def :: String -> CharParser CalcState (Maybe Double)
-variable_def varName = ( spaces
-                >> reservedOp "=" 
-                >> spaces 
-                >> parse_number 
-                >>= \varValue -> getState 
-                >>= \st -> 
-                  let newState = st { name=varName, value=varValue} in
-                     setState newState
-                >> return (Just varValue) )
-            <?> "variable"
-
-
-parse_variable :: CharParser CalcState Double
-parse_variable = (variable
-                 >>= \varName -> getState
-                 >>= \(CalcState { name=aName
-                                 , value=aValue } ) ->
-                  if varName == aName then
-                      return aValue
-                  else 
-                      fail $ "No variable " ++ varName ++ "defined")
-              <?> "parse variable"
-                  
-
-add_term :: CharParser CalcState Double
-add_term = mul_term `chainl1` add_action
-
-mul_term :: CharParser CalcState Double
-mul_term = exp_term `chainl1` multiply_action
-
-exp_term :: CharParser CalcState Double
-exp_term = factor `chainl1` exp_action
-
-factor :: CharParser CalcState Double
-factor = parens add_term
-         <|> parse_sqr
-         <|> parse_number
-         <|> parse_variable
-         
-
-parse_sqr :: CharParser CalcState Double
-parse_sqr = reserved "sqrt" >> parens add_term >>= 
-            \x -> return $ sqrt x 
-          
-multiply_action :: CharParser CalcState (Double -> Double -> Double)
-multiply_action = (reservedOp "*" >> return (*))
-                  <|> (reservedOp "/" >> return (/))
-
-add_action :: CharParser CalcState (Double -> Double -> Double)
-add_action = (reservedOp "+" >> return (+))
-             <|> (reservedOp "-" >> return (-))
-
-exp_action :: CharParser CalcState (Double -> Double -> Double)
-exp_action = reservedOp "^" >> return real_exp
-
-parse_number :: CharParser CalcState Double
-parse_number = naturalOrFloat >>= 
-               \num -> case num of 
-                 Left i  -> return $ fromInteger i
-                 Right x -> return x
-
 
