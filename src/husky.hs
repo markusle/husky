@@ -22,119 +22,128 @@
 module Main where
 
 -- imports
-import Text.ParserCombinators.Parsec 
-import qualified Text.ParserCombinators.Parsec.Token as PT
-import Text.ParserCombinators.Parsec.Language (haskellDef
-                                              , reservedOpNames
-                                              , reservedNames )
+import CalculatorState
+import TokenParser
 
 
 -- | main
 main :: IO ()
-main = do
+main = parse_it defaultCalcState
+
+
+-- | main parse function
+parse_it :: CalcState -> IO ()
+parse_it state = do
 
   -- get a line from stdin
   input <- getLine
 
   -- parse it
-  case parse parse_calc "" input of
+  case runParser calculator state "" input of
     Left er  -> putStrLn $ "Error: " ++ (show er)
-    Right cl -> case cl of
-                  Nothing  -> return ()
-                  Just val -> putStrLn (show val)
+    Right (result, newState) -> 
+        case result of
+          Nothing  -> return ()
+          Just val -> putStrLn (show val)
 
-  main
-
-
--- | function generating a token parser based on a 
--- lexical parsers combined with a language record definition
-lexer :: PT.TokenParser st
-lexer  = PT.makeTokenParser 
-         ( haskellDef { reservedOpNames = ["*","/","+","-","="]
-                      , reservedNames   = ["sqrt"] } )
+        >> parse_it newState
 
 
--- | token parser for parenthesis
-parens :: CharParser st a -> CharParser st a
-parens = PT.parens lexer
-
-
--- | token parser for Integer
-integer :: CharParser st Integer
-integer = PT.integer lexer
-
-
--- | token parser for Char
-stringLiteral :: CharParser st String
-stringLiteral = PT.stringLiteral lexer
-
-
--- | token parser for Double
-float :: CharParser st Double
-float = PT.float lexer
-
-
--- | token parser for Either Integer Double
-naturalOrFloat :: CharParser st (Either Integer Double)
-naturalOrFloat = PT.naturalOrFloat lexer
-
-
--- | token parser for keywords
-reservedOp :: String -> CharParser st ()
-reservedOp = PT.reservedOp lexer
-
-
--- | token parser for keywords
-reserved :: String -> CharParser st ()
-reserved = PT.reserved lexer
-
-
--- | helper function for defining real powers
-real_exp :: Double -> Double -> Double
-real_exp a x = exp $ x * log a
-
+-- | main parser entry point
+calculator :: CharParser CalcState (Maybe Double, CalcState)
+calculator = parse_calc 
+             >>= \val -> getState
+             >>= \state -> return (val, state)
 
 
 -- | grammar description for parser
-parse_calc :: CharParser () (Maybe Double)
-parse_calc =  (add_term >>= \x -> return (Just x))
-              <|> (variable_def >> return Nothing)
+parse_calc :: CharParser CalcState (Maybe Double)
+parse_calc =  try (add_term >>= \x -> return (Just x))
+          <|> define_variable
+          <?> "math expression, variable definition " ++
+              "or variable name"
 
-variable_def :: CharParser () ()
-variable_def = (many letter >> spaces >> reservedOp "=" 
-                >> spaces >> parse_number >> return ())
-               <?> "variable"
 
-add_term :: CharParser () Double
+-- | if the line starts off with a string we either
+-- have a variable definition or want to show the value
+-- stored in a variable
+define_variable :: CharParser CalcState (Maybe Double)
+define_variable = (spaces
+                 >> variable
+                 >>= \varName -> variable_def varName 
+                             <|> show_variable varName )
+              <?> "variable parsing"
+
+
+show_variable :: String -> CharParser CalcState (Maybe Double)
+show_variable varName = (spaces 
+                        >> getState
+                        >>= \(CalcState { name=aName
+                                        , value=aValue }) ->
+                         if varName == aName then
+                            return (Just aValue)
+                         else
+                            return Nothing )
+                     <?> "show variable"
+
+
+variable_def :: String -> CharParser CalcState (Maybe Double)
+variable_def varName = ( spaces
+                >> reservedOp "=" 
+                >> spaces 
+                >> parse_number 
+                >>= \varValue -> getState 
+                >>= \st -> 
+                  let newState = st { name=varName, value=varValue} in
+                     setState newState
+                >> return (Just varValue) )
+            <?> "variable"
+
+
+parse_variable :: CharParser CalcState Double
+parse_variable = (variable
+                 >>= \varName -> getState
+                 >>= \(CalcState { name=aName
+                                 , value=aValue } ) ->
+                  if varName == aName then
+                      return aValue
+                  else 
+                      fail $ "No variable " ++ varName ++ "defined")
+              <?> "parse variable"
+                  
+
+add_term :: CharParser CalcState Double
 add_term = mul_term `chainl1` add_action
 
-mul_term :: CharParser () Double
+mul_term :: CharParser CalcState Double
 mul_term = exp_term `chainl1` multiply_action
 
-exp_term :: CharParser () Double
+exp_term :: CharParser CalcState Double
 exp_term = factor `chainl1` exp_action
 
-factor :: CharParser () Double
+factor :: CharParser CalcState Double
 factor = parens add_term
          <|> parse_sqr
          <|> parse_number
+         <|> parse_variable
+         
 
-parse_sqr :: CharParser () Double
+parse_sqr :: CharParser CalcState Double
 parse_sqr = reserved "sqrt" >> parens add_term >>= 
             \x -> return $ sqrt x 
           
-multiply_action :: CharParser () (Double -> Double -> Double)
+multiply_action :: CharParser CalcState (Double -> Double -> Double)
 multiply_action = (reservedOp "*" >> return (*))
                   <|> (reservedOp "/" >> return (/))
 
-add_action :: CharParser () (Double -> Double -> Double)
+add_action :: CharParser CalcState (Double -> Double -> Double)
 add_action = (reservedOp "+" >> return (+))
              <|> (reservedOp "-" >> return (-))
 
-exp_action :: CharParser () (Double -> Double -> Double)
+exp_action :: CharParser CalcState (Double -> Double -> Double)
 exp_action = reservedOp "^" >> return real_exp
 
-parse_number :: CharParser () Double
+parse_number :: CharParser CalcState Double
 parse_number = naturalOrFloat >>= 
                \num -> case num of 
                  Left i  -> return $ fromInteger i
