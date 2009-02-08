@@ -22,10 +22,15 @@
 module CalculatorParser ( calculator ) where
 
 
-
 -- imports
+import qualified Data.Map as M
+import Control.Monad
+
+-- local imports
 import CalculatorState
 import TokenParser
+
+import Debug.Trace
 
 
 -- | main parser entry point
@@ -36,9 +41,14 @@ calculator = parse_calc
 
 
 -- | grammar description for parser
+-- NOTE: We have to make sure to provide a default
+--       catch all parsing rule in case the user
+--       enters something we don't understand. Otherwise
+--       parsing fails and we loose our state.
 parse_calc :: CharParser CalcState (Maybe Double)
 parse_calc =  try (add_term >>= \x -> return (Just x))
           <|> define_variable
+          <|> return Nothing
           <?> "math expression, variable definition " ++
               "or variable name"
 
@@ -51,16 +61,16 @@ define_variable = (spaces
                  >> variable
                  >>= \varName -> variable_def varName 
                              <|> show_variable varName )
-              <?> "variable parsing"
+              <?> "variable definition"
 
 
 show_variable :: String -> CharParser CalcState (Maybe Double)
 show_variable varName = (spaces 
-                        >> getState
-                        >>= \state -> 
-                            let result = get_variable varName state in
-                              return result )
-                     <?> "show variable"
+                         >> getState
+                         >>= \state -> 
+                             let value = get_variable varName state in
+                               return value )
+                     <?> "variable"
 
 
 variable_def :: String -> CharParser CalcState (Maybe Double)
@@ -68,22 +78,21 @@ variable_def varName = ( spaces
                 >> reservedOp "=" 
                 >> spaces 
                 >> parse_number 
-                >>= \value -> getState 
-                >>= \st -> updateState (insert_variable value varName)
+                >>= \value -> 
+                    updateState (insert_variable value varName)
                 >> return (Just value) )
             <?> "variable"
 
 
 
 parse_variable :: CharParser CalcState Double
-parse_variable = (variable
-                 >>= \varName -> getState
-                 >>= \state -> 
-                     case get_variable varName state of
-                       Just a -> return a
-                       Nothing -> fail $ "No variable " ++ varName 
-                                         ++ "defined" )
-              <?> "parse variable"
+parse_variable = (variable 
+                  >>= \varName -> getState 
+                  >>= \state -> 
+                      case get_variable varName state of
+                        Just a  -> return a
+                        Nothing -> pzero )
+              <?> "variable"
                   
 
 add_term :: CharParser CalcState Double
@@ -97,10 +106,10 @@ exp_term = factor `chainl1` exp_action
 
 factor :: CharParser CalcState Double
 factor = parens add_term
-         <|> parse_sqr
-         <|> parse_number
-         <|> parse_variable
-         
+      <|> parse_sqr
+      <|> parse_number
+      <|> parse_variable
+      <?> "token or variable"         
 
 parse_sqr :: CharParser CalcState Double
 parse_sqr = reserved "sqrt" >> parens add_term >>= 
@@ -123,3 +132,10 @@ parse_number = naturalOrFloat >>=
                  Left i  -> return $ fromInteger i
                  Right x -> return x
 
+
+-- | function retrieving a variable from the database if
+-- present 
+get_variable :: String -> CalcState -> Maybe Double
+get_variable name (CalcState { varMap = theMap }) =
+    M.lookup name theMap 
+    

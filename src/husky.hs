@@ -21,9 +21,11 @@
 -- | main archy driver
 module Main where
 
--- imports
+
+-- local imports
 import CalculatorParser
 import CalculatorState
+import PrettyPrint
 import TokenParser
 
 
@@ -36,7 +38,8 @@ main = parse_it defaultCalcState
 parse_it :: CalcState -> IO ()
 parse_it state = do
 
-  -- get a line from stdin
+  -- prompt and get a line from stdin
+  husky_prompt
   input <- getLine
 
   -- parse it
@@ -45,7 +48,8 @@ parse_it state = do
     Right (result, newState) -> 
         case result of
           Nothing  -> return ()
-          Just val -> putStrLn (show val)
+          Just val -> husky_result >> putStrLn (show val)
 
         >> parse_it newState
+
 
