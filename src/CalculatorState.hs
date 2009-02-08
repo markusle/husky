@@ -34,7 +34,7 @@ import qualified Data.Map as M
 data CalcState = CalcState { varMap :: M.Map String Double }
 
 defaultCalcState :: CalcState
-defaultCalcState = CalcState { varMap = M.empty }
+defaultCalcState = CalcState { varMap = M.fromList constantList }
 
 
 -- | function adding a new variable to the database
@@ -42,3 +42,12 @@ insert_variable :: Double -> String -> CalcState -> CalcState
 insert_variable num name @state(CalcState { varMap = theMap }) =
     CalcState { varMap = M.insert name num theMap } 
 
+
+
+-- | provide a few useful mathematical constants that we
+-- load into the default CalculatorState
+constantList :: [(String,Double)]
+constantList = 
+    [ ("pi",3.14159265358979323846264338327950288)
+    , ("e",2.71828182845904523536028747135266249)
+    , ("phi",1.61803398874989484820458683436563811)]  -- golden ratio 

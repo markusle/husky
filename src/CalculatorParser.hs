@@ -95,25 +95,45 @@ parse_variable = (variable
               <?> "variable"
                   
 
+-- | parser for expressions chained via "+" or "-"
 add_term :: CharParser CalcState Double
 add_term = mul_term `chainl1` add_action
 
+
+-- | parser for expressions chained via "*" or "/"
 mul_term :: CharParser CalcState Double
 mul_term = exp_term `chainl1` multiply_action
 
+
+-- | parser for potentiation operations "^"
 exp_term :: CharParser CalcState Double
 exp_term = factor `chainl1` exp_action
 
+
+-- | parser for individual factors, i.e, numbers,
+-- variables or operations
 factor :: CharParser CalcState Double
 factor = parens add_term
-      <|> parse_sqr
+      <|> parse_operations
       <|> parse_number
       <|> parse_variable
       <?> "token or variable"         
 
-parse_sqr :: CharParser CalcState Double
-parse_sqr = reserved "sqrt" >> parens add_term >>= 
-            \x -> return $ sqrt x 
+
+-- | parse all operations we currently know about
+parse_operations :: CharParser CalcState Double
+parse_operations = msum $ extract_ops operations
+
+    where
+      extract_ops = foldr (\(x,y) acc -> 
+                           ((reserved x >> execute y):acc)) [] 
+
+
+-- | execute the requested operator on the term enclosed
+-- in parentheses       
+execute :: OperatorAction -> CharParser CalcState Double
+execute op = parens add_term >>= return . op
+
           
 multiply_action :: CharParser CalcState (Double -> Double -> Double)
 multiply_action = (reservedOp "*" >> return (*))

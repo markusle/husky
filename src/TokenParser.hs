@@ -20,17 +20,19 @@
 
 -- | functionality related to parsing tokens
 module TokenParser ( module Text.ParserCombinators.Parsec
-                   , variable
-                   , lexer
-                   , parens
-                   , integer
-                   , stringLiteral
-                   , identifier
                    , float
+                   , identifier
+                   , integer
+                   , parens
+                   , lexer
                    , naturalOrFloat
+                   , operations
+                   , OperatorAction
+                   , real_exp 
                    , reservedOp
                    , reserved
-                   , real_exp ) where
+                   , stringLiteral
+                   , variable ) where
 
 
 -- imports
@@ -55,6 +57,18 @@ variable = letter
 
 
 
+-- | these are all the names and corresponding functions
+-- of operations we know about
+type OperatorAction = (Double -> Double)
+
+operations :: [(String, OperatorAction)]
+operations = [ ("sqrt",sqrt)
+             , ("exp",exp)
+             , ("sin",sin)
+             , ("cos",cos)
+             , ("tan",tan)]
+
+
 {- | prepare needed parsers from Parsec.Token -}
 
 -- | function generating a token parser based on a 
@@ -62,7 +76,7 @@ variable = letter
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
          ( haskellDef { reservedOpNames = ["*","/","+","-","="]
-                      , reservedNames   = ["sqrt"] } )
+                      , reservedNames   = map fst operations } )
 
 
 -- | token parser for parenthesis
