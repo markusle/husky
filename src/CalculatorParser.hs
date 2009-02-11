@@ -64,32 +64,43 @@ define_variable = (spaces
               <?> "variable definition"
 
 
+-- | show the current value for a variable if any
 show_variable :: String -> CharParser CalcState (Maybe Double)
 show_variable varName = (spaces 
-                         >> getState
-                         >>= \state -> 
-                             let value = get_variable varName state in
-                               return value )
+                         >> get_variable_value varName )
                      <?> "variable"
 
 
+-- | define a variable
 variable_def :: String -> CharParser CalcState (Maybe Double)
 variable_def varName = ( spaces
                 >> reservedOp "=" 
                 >> spaces 
-                >> parse_number 
-                >>= \value -> 
-                    updateState (insert_variable value varName)
-                >> return (Just value) )
+                >> ( variable_def_by_value varName 
+                    <|> variable_def_by_var varName)  )
             <?> "variable"
 
 
+-- | define a variable via a literal double
+variable_def_by_value :: String -> CharParser CalcState (Maybe Double)
+variable_def_by_value varName = ( parse_number
+            >>= \value -> updateState (insert_variable value varName)
+            >> return (Just value) )
+          <?> "variable from value"
 
+
+-- | define a variable via the value of another variable
+variable_def_by_var :: String -> CharParser CalcState (Maybe Double)
+variable_def_by_var varName = parse_variable 
+            >>= \value -> updateState (insert_variable value varName)
+            >> return (Just value)
+             
+
+-- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
 parse_variable = (variable 
-                  >>= \varName -> getState 
-                  >>= \state -> 
-                      case get_variable varName state of
+                  >>= get_variable_value 
+                  >>= \result -> case result of
                         Just a  -> return a
                         Nothing -> pzero )
               <?> "variable"
@@ -156,7 +167,6 @@ parse_number = naturalOrFloat
 
 -- | function retrieving a variable from the database if
 -- present 
-get_variable :: String -> CalcState -> Maybe Double
-get_variable name (CalcState { varMap = theMap }) =
-    M.lookup name theMap 
-    
+get_variable_value :: String -> CharParser CalcState (Maybe Double)
+get_variable_value name = getState 
+  >>= \(CalcState { varMap = myMap }) -> return $ M.lookup name myMap
