@@ -26,8 +26,9 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , parens
                    , lexer
                    , naturalOrFloat
-                   , operations
+                   , keywords
                    , OperatorAction
+                   , operators
                    , real_exp 
                    , reservedOp
                    , reserved
@@ -58,15 +59,19 @@ variable = letter
 
 
 -- | these are all the names and corresponding functions
--- of operations we know about
+-- of keywords we know about
 type OperatorAction = (Double -> Double)
 
-operations :: [(String, OperatorAction)]
-operations = [ ("sqrt",sqrt)
+keywords :: [(String, OperatorAction)]
+keywords = [ ("sqrt",sqrt)
              , ("exp",exp)
              , ("sin",sin)
              , ("cos",cos)
              , ("tan",tan)]
+
+
+operators :: [String]
+operators = ["*","/","+","-","="]
 
 
 {- | prepare needed parsers from Parsec.Token -}
@@ -75,8 +80,8 @@ operations = [ ("sqrt",sqrt)
 -- lexical parsers combined with a language record definition
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
-         ( haskellDef { reservedOpNames = ["*","/","+","-","="]
-                      , reservedNames   = map fst operations } )
+         ( haskellDef { reservedOpNames = operators
+                      , reservedNames   = map fst keywords } )
 
 
 -- | token parser for parenthesis

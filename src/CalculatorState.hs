@@ -28,7 +28,6 @@ module CalculatorState ( CalcState(..)
 import qualified Data.Map as M
 
 
-
 -- | this data structure provides some state information
 -- to the calculator (variables, etc ...)
 data CalcState = CalcState { varMap :: M.Map String Double }

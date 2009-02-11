@@ -114,15 +114,15 @@ exp_term = factor `chainl1` exp_action
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = parens add_term
-      <|> parse_operations
+      <|> parse_keywords
       <|> parse_number
       <|> parse_variable
       <?> "token or variable"         
 
 
 -- | parse all operations we currently know about
-parse_operations :: CharParser CalcState Double
-parse_operations = msum $ extract_ops operations
+parse_keywords :: CharParser CalcState Double
+parse_keywords = msum $ extract_ops keywords
 
     where
       extract_ops = foldr (\(x,y) acc -> 
@@ -147,10 +147,11 @@ exp_action :: CharParser CalcState (Double -> Double -> Double)
 exp_action = reservedOp "^" >> return real_exp
 
 parse_number :: CharParser CalcState Double
-parse_number = naturalOrFloat >>= 
-               \num -> case num of 
-                 Left i  -> return $ fromInteger i
-                 Right x -> return x
+parse_number = naturalOrFloat 
+               >>= \num -> notFollowedBy alphaNum
+               >> case num of 
+                    Left i  -> return $ fromInteger i
+                    Right x -> return x
 
 
 -- | function retrieving a variable from the database if
