@@ -46,8 +46,8 @@ calculator = parse_calc
 --       enters something we don't understand. Otherwise
 --       parsing fails and we loose our state.
 parse_calc :: CharParser CalcState (Maybe Double)
-parse_calc =  try (add_term >>= \x -> return (Just x))
-          <|> define_variable
+parse_calc =  try define_variable 
+          <|> try (add_term >>= \x -> return (Just x))
           <|> return Nothing
           <?> "math expression, variable definition " ++
               "or variable name"
@@ -59,16 +59,8 @@ parse_calc =  try (add_term >>= \x -> return (Just x))
 define_variable :: CharParser CalcState (Maybe Double)
 define_variable = (spaces
                  >> variable
-                 >>= \varName -> variable_def varName 
-                             <|> show_variable varName )
+                 >>= \varName -> variable_def varName )
               <?> "variable definition"
-
-
--- | show the current value for a variable if any
-show_variable :: String -> CharParser CalcState (Maybe Double)
-show_variable varName = (spaces 
-                         >> get_variable_value varName )
-                     <?> "variable"
 
 
 -- | define a variable
@@ -83,7 +75,7 @@ variable_def varName = ( spaces
 
 -- | define a variable via a literal double
 variable_def_by_value :: String -> CharParser CalcState (Maybe Double)
-variable_def_by_value varName = ( parse_number
+variable_def_by_value varName = ( add_term
             >>= \value -> updateState (insert_variable value varName)
             >> return (Just value) )
           <?> "variable from value"
@@ -98,10 +90,11 @@ variable_def_by_var varName = parse_variable
 
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
-parse_variable = (variable 
-                  >>= get_variable_value 
+parse_variable = ( variable 
+                  >>= \val -> spaces
+                  >> get_variable_value val
                   >>= \result -> case result of
-                        Just a  -> return a
+                        Just a  -> return a 
                         Nothing -> pzero )
               <?> "variable"
                   
@@ -125,9 +118,9 @@ exp_term = factor `chainl1` exp_action
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = parens add_term
-      <|> parse_keywords
-      <|> parse_number
-      <|> parse_variable
+      <|> (spaces >> parse_keywords)
+      <|> (spaces >> parse_number)
+      <|> (spaces >> parse_variable)
       <?> "token or variable"         
 
 

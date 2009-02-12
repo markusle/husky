@@ -38,7 +38,7 @@ defaultCalcState = CalcState { varMap = M.fromList constantList }
 
 -- | function adding a new variable to the database
 insert_variable :: Double -> String -> CalcState -> CalcState
-insert_variable num name @state(CalcState { varMap = theMap }) =
+insert_variable num name (CalcState { varMap = theMap }) =
     CalcState { varMap = M.insert name num theMap } 
 
 
