@@ -23,9 +23,6 @@ module PrettyPrint ( putColorStr
                    , putColorStrLn 
                    , putColorBStr 
                    , putColorBStrLn 
-                   , husky_prompt
-                   , husky_result
-                   , show_greeting
                    ) where
 
 -- imports
@@ -72,20 +69,3 @@ putColorBStrLn color text =
     B.putStrLn text
     setSGR[Reset]
 
-
--- | how the prompts look like
-husky_prompt :: IO ()
-husky_prompt = do
-  putColorStr Red $ "husky> "
-  hFlush stdout
-
-husky_result :: IO ()
-husky_result = do
-  putColorStr Yellow $ "=> "
-
-
--- | greeting                                                          
-show_greeting :: IO ()                                                 
-show_greeting = do                                                     
-  putStrLn "Welcome to husky (v0.0)  (C) 2009 Markus Dittrich"
-  putStrLn "-------------------------------------------------"

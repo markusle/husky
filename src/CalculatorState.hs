@@ -18,10 +18,13 @@
 
 --------------------------------------------------------------------}
 
--- | main archy driver
+-- | this module contains small bits and pieces needed for 
+-- the calculator. Eventually, these might all find a home
+-- in their separate modules
 module CalculatorState ( CalcState(..)
+                       , defaultCalcState 
                        , insert_variable
-                       , defaultCalcState ) where
+                       ) where
 
 
 -- imports
@@ -50,3 +53,4 @@ constantList =
     [ ("pi",3.14159265358979323846264338327950288)
     , ("e",2.71828182845904523536028747135266249)
     , ("phi",1.61803398874989484820458683436563811)]  -- golden ratio 
+

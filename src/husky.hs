@@ -25,7 +25,7 @@ module Main where
 -- local imports
 import CalculatorParser
 import CalculatorState
-import PrettyPrint
+import Messages
 import TokenParser
 
 
@@ -49,7 +49,7 @@ parse_it state = do
     Left er  -> putStrLn $ "Error: " ++ (show er)
     Right (result, newState) -> 
         case result of
-          Nothing  -> return ()
+          Nothing  -> parse_error input
           Just val -> husky_result >> putStrLn (show val)
 
         >> parse_it newState
