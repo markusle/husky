@@ -31,7 +31,9 @@ import TokenParser
 
 -- | main
 main :: IO ()
-main = parse_it defaultCalcState
+main = do
+  show_greeting
+  parse_it defaultCalcState
 
 
 -- | main parse function
@@ -51,5 +53,4 @@ parse_it state = do
           Just val -> husky_result >> putStrLn (show val)
 
         >> parse_it newState
-
 

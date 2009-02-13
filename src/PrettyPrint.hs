@@ -25,6 +25,7 @@ module PrettyPrint ( putColorStr
                    , putColorBStrLn 
                    , husky_prompt
                    , husky_result
+                   , show_greeting
                    ) where
 
 -- imports
@@ -81,3 +82,10 @@ husky_prompt = do
 husky_result :: IO ()
 husky_result = do
   putColorStr Yellow $ "=> "
+
+
+-- | greeting                                                          
+show_greeting :: IO ()                                                 
+show_greeting = do                                                     
+  putStrLn "Welcome to husky (v0.0)  (C) 2009 Markus Dittrich"
+  putStrLn "-------------------------------------------------"
