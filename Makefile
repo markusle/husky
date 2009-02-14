@@ -25,7 +25,8 @@ debug: $(OBJECTS)
 
 
 test: husky
-	make -C test
+	ghc -i./src --make test/PropertyTest.hs
+	./test/PropertyTest
 
 install:
 	install -d $(docdir)
@@ -38,4 +39,5 @@ install:
 .PHONY: clean
 
 clean:
-	rm -f src/*.o src/*.hi src/husky
+	rm -f src/*.o src/*.hi src/husky test/*.o test/*.hi \
+		test/*.PropertyTest

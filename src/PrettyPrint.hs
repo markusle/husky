@@ -23,6 +23,7 @@ module PrettyPrint ( putColorStr
                    , putColorStrLn 
                    , putColorBStr 
                    , putColorBStrLn 
+                   , module System.Console.ANSI 
                    ) where
 
 -- imports
