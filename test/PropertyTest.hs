@@ -45,7 +45,10 @@ main = do
   let failing = execWriter $ test_driver defaultCalcState failingTests
   status2 <- examine_output failing
 
-  let status = status1 && status2
+  let vars = execWriter $ test_driver defaultCalcState variableTests
+  status3 <- examine_output vars
+
+  let status = status1 && status2 && status3
   if status == True then
       exitWith ExitSuccess
     else
@@ -88,27 +91,29 @@ examine_output = foldM examine_output_h True
 
 -- | main test routine
 test_driver :: CalcState -> [TestCase] -> Writer [TestResult] ()
-test_driver state tests = mapM_ test_driver_h tests 
+test_driver _ []         = return ()
+test_driver state (x:xs) = do
 
-  where
-    test_driver_h x = do
-      let tok      = fst x
-      let expected = snd x
-      case runParser calculator state "" tok of
-        Left er -> tell [TestResult False tok expected Nothing]
-        Right (result, newState) -> examine_result expected result tok
+  let tok      = fst x
+  let expected = snd x
+  case runParser calculator state "" tok of
+    Left er -> tell [TestResult False tok expected Nothing]
+    Right (result, newState) -> examine_result expected result tok
         
-        where
-          -- NOTE: when we compare target and actual result we
-          -- probably need to be more careful and can't use ==
-          -- if we are dealing with Doubles!!!
-          examine_result :: Maybe Double -> Maybe Double -> String 
-                         -> Writer [TestResult] ()
-          examine_result target actual token = 
-              if target == actual then
-                  tell [TestResult True token target actual]
-              else 
-                  tell [TestResult False token target actual]
+      where
+        -- NOTE: when we compare target and actual result we
+        -- probably need to be more careful and can't use ==
+        -- if we are dealing with Doubles!!!
+        examine_result :: Maybe Double -> Maybe Double -> String 
+                       -> Writer [TestResult] ()
+        examine_result target actual token = 
+          if target == actual 
+            then do
+               tell [TestResult True token target actual]
+               test_driver newState xs
+            else do
+               tell [TestResult False token target actual]
+               test_driver newState xs
 
  
 -- | our test results consist of a bool indicating success
@@ -229,3 +234,50 @@ failingTest11 = ("(3+3)**(8+4)*3*(2+1)*4*(3+5)", Nothing)
 
 failingTest12 :: TestCase
 failingTest12 = ("b", Nothing)
+
+
+-- a few tests involving variables
+variableTests :: [TestCase]
+variableTests = [ variableTest1, variableTest2, variableTest3
+                , variableTest4, variableTest5, variableTest6
+                , variableTest7, variableTest8, variableTest9 ]
+{-               , variableTest10, variableTest11, variableTest12 ] -}
+
+-- list of failing tests
+variableTest1 :: TestCase
+variableTest1 = ("b = 4", Just 4)
+
+variableTest2 :: TestCase
+variableTest2 = ("3 * b ", Just 12)
+
+variableTest3 :: TestCase
+variableTest3 = ("(b*b)", Just 16)
+
+variableTest4 :: TestCase
+variableTest4 = ("a = 12", Just 12)
+
+variableTest5 :: TestCase
+variableTest5 = ("a * b", Just 48)
+
+variableTest6 :: TestCase
+variableTest6 = ("a - b * b", Just (-4))
+
+variableTest7 :: TestCase
+variableTest7 = ("3 * b - a", Just 0)
+
+variableTest8 :: TestCase
+variableTest8 = ("kjhdskfsd123hjksdf = a * b", Just 48)
+
+variableTest9 :: TestCase
+variableTest9 = ("(a*b) - kjhdskfsd123hjksdf", Just 0)
+
+variableTest10 :: TestCase
+variableTest10 = ("c = 2", Nothing) 
+
+variableTest11 :: TestCase
+variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", Just 168)
+
+variableTest12 :: TestCase
+variableTest12 = ("b^a - c", Just 16777214)
+
+
