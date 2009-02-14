@@ -47,7 +47,7 @@ calculator = parse_calc
 --       parsing fails and we loose our state.
 parse_calc :: CharParser CalcState (Maybe Double)
 parse_calc =  try define_variable 
-          <|> try (add_term >>= \x -> return (Just x))
+          <|> try (add_term >>= \x -> end_of_line >> return (Just x))
           <|> return Nothing
           <?> "math expression, variable definition " ++
               "or variable name"
@@ -61,6 +61,16 @@ define_variable = (spaces
                  >> variable
                  >>= \varName -> variable_def varName )
               <?> "variable definition"
+
+
+-- | check that we are at the end of the line; otherwise
+-- parsing failed since we always expect to parse the 
+-- full expression
+end_of_line :: CharParser CalcState ()
+end_of_line = getInput >>= \input ->
+                case length input of
+                  0 -> return ()
+                  _ -> pzero
 
 
 -- | define a variable
@@ -111,16 +121,16 @@ mul_term = exp_term `chainl1` multiply_action
 
 -- | parser for potentiation operations "^"
 exp_term :: CharParser CalcState Double
-exp_term = factor `chainl1` exp_action
+exp_term = (spaces >> factor) `chainl1` exp_action
 
 
 -- | parser for individual factors, i.e, numbers,
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = parens add_term
-      <|> (spaces >> parse_keywords)
-      <|> (spaces >> parse_number)
-      <|> (spaces >> parse_variable)
+      <|> parse_keywords
+      <|> parse_number
+      <|> parse_variable
       <?> "token or variable"         
 
 
