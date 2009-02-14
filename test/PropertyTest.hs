@@ -138,7 +138,8 @@ type TestCase  = (String, Maybe Double)
 simpleTests :: [TestCase]
 simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
               , simpleTest5, simpleTest6, simpleTest7
-              , simpleTest8, simpleTest9, simpleTest10, simpleTest11]
+              , simpleTest8, simpleTest9, simpleTest10, simpleTest11
+              , simpleTest12, simpleTest13, simpleTest14]
 
 -- list of simple tests
 simpleTest1 :: TestCase
@@ -174,6 +175,15 @@ simpleTest10 = ("3+3*8+4*3*2+1*4*3+5", Just 68.0)
 simpleTest11 :: TestCase
 simpleTest11 = ("(3+3)*(8+4)*3*(2+1)*4*(3+5)", Just 20736.0)
 
+simpleTest12 :: TestCase
+simpleTest12 = (" 3  +3*     99.0", Just 300.0)
+
+simpleTest13 :: TestCase
+simpleTest13 = (" 3  + 3*8+4  *3 *2+1*  4*3+5  ", Just 68.0)
+
+simpleTest14 :: TestCase
+simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)", Just 20736.0)
+
 
 
 -- a few tests that are failing 
@@ -181,7 +191,7 @@ failingTests :: [TestCase]
 failingTests = [ failingTest1, failingTest2, failingTest3
                , failingTest4, failingTest5, failingTest6
                , failingTest7, failingTest8, failingTest9
-               , failingTest10, failingTest11]
+               , failingTest10, failingTest11, failingTest12 ]
 
 -- list of failing tests
 failingTest1 :: TestCase
@@ -216,3 +226,6 @@ failingTest10 = ("3+3*8+4*3++2+1*4*3+5", Nothing)
 
 failingTest11 :: TestCase
 failingTest11 = ("(3+3)**(8+4)*3*(2+1)*4*(3+5)", Nothing)
+
+failingTest12 :: TestCase
+failingTest12 = ("b", Nothing)
