@@ -19,29 +19,22 @@
 --------------------------------------------------------------------}
 
 -- | Messages provides common messages
-module Messages ( husky_prompt
-                , husky_result
+module Messages ( husky_result
                 , parse_error
                 , show_greeting
                 ) where
 
 -- imports
-import System.Console.ANSI
 import System.IO
 
 -- local imports
 import PrettyPrint
 
 
--- | how the prompts look like
-husky_prompt :: IO ()
-husky_prompt = do
-  putColorStr Red $ "husky> "
-  hFlush stdout
-
+-- | display output somewhat colorful
 husky_result :: IO ()
 husky_result = do
-  putColorStr Yellow $ "=> "
+  putStr $ color_string Yellow "=> "
 
 
 -- | greeting                                                         
@@ -55,5 +48,5 @@ show_greeting = do
 -- during parsing
 parse_error :: String -> IO ()
 parse_error message = do
-  putColorStr Yellow $ "Error: "
-  putColorStrLn Green $ "Could not parse '" ++ message ++ "'"
+  putStr   $ color_string Yellow "Error: "
+  putStrLn $ color_string Green "Could not parse '" ++ message ++ "'"

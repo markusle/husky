@@ -22,10 +22,14 @@
 module Main where
 
 
+-- imports
+import System.Console.Readline
+
 -- local imports
 import CalculatorParser
 import CalculatorState
 import Messages
+import PrettyPrint
 import TokenParser
 
 
@@ -41,16 +45,21 @@ parse_it :: CalcState -> IO ()
 parse_it state = do
 
   -- prompt and get a line from stdin
-  husky_prompt
-  input <- getLine
+  input <- readline $ color_string Red "husky> "
+  case input of 
+    Nothing   -> parse_it state
+    Just ":q" -> return ()
+    Just line -> do
 
-  -- parse it
-  case runParser calculator state "" input of
-    Left er  -> putStrLn $ "Error: " ++ (show er)
-    Right (result, newState) -> 
-        case result of
-          Nothing  -> parse_error input
-          Just val -> husky_result >> putStrLn (show val)
+      addHistory line
 
-        >> parse_it newState
+      -- parse it
+      case runParser calculator state "" line of
+        Left er  -> putStrLn $ "Error: " ++ (show er)
+        Right (result, newState) -> 
+          case result of
+            Nothing  -> parse_error line
+            Just val -> husky_result >> putStrLn (show val)
+
+          >> parse_it newState
 

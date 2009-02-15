@@ -24,7 +24,7 @@ debug: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_DEVEL) --make src/husky.hs
 
 
-test: husky
+test: $(OBJECTS)
 	ghc -i./src --make test/PropertyTest.hs
 	./test/PropertyTest
 

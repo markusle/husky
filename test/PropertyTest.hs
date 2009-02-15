@@ -66,20 +66,22 @@ examine_output = foldM examine_output_h True
     examine_output_h :: Bool -> TestResult -> IO Bool
     examine_output_h acc (TestResult status token target actual) = do
       if status == True then do
-          putColorStr     Blue $ "["
-          putColorStr    White $ "OK"
-          putColorStr     Blue $ "]      "
-          putColorStr    Green $ " Successfully evaluated "
-          putColorStrLn Yellow $ token
+          putStr   $ color_string Blue "["
+          putStr   $ color_string White "OK"
+          putStr   $ color_string Blue  "] "
+          putStr   $ color_string Green " Successfully evaluated "
+          putStrLn $ color_string Yellow token
           return $ acc && True
         else do
-          putColorStr     Blue $ "["
-          putColorStr      Red $ "TROUBLE"
-          putColorStr     Blue $ "] "
-          putColorStr    Green $ " Failed to evaluate "
-          putColorStrLn Yellow $ token
-          putColorStrLn  Green $ "\t\texpected : " ++ (convert target)
-          putColorStrLn  Green $ "\t\tgot      : " ++ (convert actual)
+          putStr   $ color_string Blue "["
+          putStr   $ color_string Red "TROUBLE"
+          putStr   $ color_string Blue "] "
+          putStr   $ color_string Green " Failed to evaluate "
+          putStrLn $ color_string Yellow token
+          putStrLn $ color_string Green "\t\texpected : " 
+                       ++ (convert target)
+          putStrLn $ color_string Green "\t\tgot      : " 
+                       ++ (convert actual)
           return False
     
      where

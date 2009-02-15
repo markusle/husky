@@ -19,54 +19,50 @@
 --------------------------------------------------------------------}
 
 -- | PrettyPrint provides tools for colored output to the terminal
-module PrettyPrint ( putColorStr 
-                   , putColorStrLn 
-                   , putColorBStr 
-                   , putColorBStrLn 
-                   , module System.Console.ANSI 
+module PrettyPrint ( Color(..)
+                   , Intensity(..)
+                   , color_string
+                   , color_string_int
                    ) where
 
--- imports
-import qualified Data.ByteString as B
-import System.Console.ANSI
-import System.IO
+
+-- define colors
+data Color = Black | Red | Green | Yellow | Blue | Magenta 
+           | Cyan | White | Reset 
+           deriving(Enum)
 
 
--- | prints a string in Color to the terminal
-putColorStr :: Color -> String -> IO ()
-putColorStr color text = 
-  do
-    setSGR[Reset]
-    setSGR[SetColor Foreground Vivid color]
-    putStr text
-    setSGR[Reset]
-          
+-- define intensity 
+data Intensity = Normal | Bold
+               deriving(Eq)
 
--- | prints a string with backspace in Color to the terminal
-putColorStrLn :: Color -> String -> IO ()
-putColorStrLn color text = 
-  do
-    setSGR[Reset]
-    setSGR[SetColor Foreground Vivid color]
-    putStrLn text
-    setSGR[Reset]
- 
--- | prints a ByteString in Color to the terminal
-putColorBStr :: Color -> B.ByteString -> IO ()
-putColorBStr color text = 
-  do
-    setSGR[Reset]
-    setSGR[SetColor Foreground Vivid color]
-    B.putStr text
-    setSGR[Reset]
-          
 
--- | prints a ByteString with backspace in Color to the terminal
-putColorBStrLn :: Color -> B.ByteString -> IO ()
-putColorBStrLn color text = 
-  do
-    setSGR[Reset]
-    setSGR[SetColor Foreground Vivid color]
-    B.putStrLn text
-    setSGR[Reset]
+-- convert a color into the corresponding color code string
+get_color_code :: Color -> String
+get_color_code = show . fromEnum 
 
+
+-- convert an intensity to the corresponding color code string
+get_intensity_code :: Intensity -> String
+get_intensity_code x
+  | x == Normal  = "22"
+  | x == Bold    = "1"
+  | otherwise    = "1"
+
+
+-- convenience wrapper around color string for bold colors
+color_string :: Color -> String -> String
+color_string = color_string_int Bold
+                
+
+-- convert a standard string into one graphically rendered
+-- allows customization of color and intensity
+color_string_int :: Intensity -> Color -> String -> String
+color_string_int intensity col str = 
+    "\ESC[" 
+    ++ (get_intensity_code intensity) 
+    ++ ";3" 
+    ++ (get_color_code col) 
+    ++ "m"
+    ++ str 
+    ++ "\ESC[0;m"
