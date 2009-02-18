@@ -1,7 +1,7 @@
 # Copyright 2008 Markus Dittrich <markusle@gmail.com>
 # Distributed under the terms of the GNU General Public License v3
 
-VERSION=0.0-alpha
+VERSION=0.1
 DESTDIR=
 mandir=$(DESTDIR)/usr/share/man/man1
 docdir=$(DESTDIR)/usr/share/doc/husky-$(VERSION)
@@ -14,7 +14,7 @@ GHC_FLAGS_RELEASE = -O2
 OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \
 	  src/PrettyPrint.hs src/TokenParser.hs
 
-all: debug
+all: husky
 
 husky: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_RELEASE) --make src/husky.hs
@@ -24,20 +24,21 @@ debug: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_DEVEL) --make src/husky.hs
 
 
-test: $(OBJECTS)
+check: $(OBJECTS)
 	ghc -i./src --make test/PropertyTest.hs
 	./test/PropertyTest
 
-install:
+install: husky
 	install -d $(docdir)
-	install -d $(mandir)
 	install -d $(bindir)
+	install -d $(htmldir)
 	install -m 0755 src/husky $(bindir)/
 	install -m 0644 COPYING AUTHORS $(docdir)/
+	install -m 0644 doc/usage.html $(htmldir)/
 
 
 .PHONY: clean
 
 clean:
 	rm -f src/*.o src/*.hi src/husky test/*.o test/*.hi \
-		test/*.PropertyTest
+		test/PropertyTest

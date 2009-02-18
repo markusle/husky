@@ -40,7 +40,7 @@ husky_result = do
 -- | greeting                                                         
 show_greeting :: IO ()                                                
 show_greeting = do                                                    
-  putStrLn "Welcome to husky (v0.0)  (C) 2009 Markus Dittrich"
+  putStrLn "Welcome to husky (v0.1)  (C) 2009 Markus Dittrich"
   putStrLn "-------------------------------------------------"
 
 

@@ -1,7 +1,6 @@
 DESCRIPTION:
 
 husky is a command line calculator written in haskell.
-Eventually, I intend husky to become a full fledged unix shell.
-Husky is released under the GPL v3.
+husky is released under the GPL v3.
 
-(C) 2008-2009 Markus Dittrich
+(C) 2009 Markus Dittrich

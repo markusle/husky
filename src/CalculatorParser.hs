@@ -30,8 +30,6 @@ import Control.Monad
 import CalculatorState
 import TokenParser
 
-import Debug.Trace
-
 
 -- | main parser entry point
 calculator :: CharParser CalcState (Maybe Double, CalcState)
