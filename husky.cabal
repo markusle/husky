@@ -17,8 +17,8 @@ cabal-version: >= 1.2.1
 extra-source-files: README
 
 Executable husky
-  Build-Depends:  base, readline >= 1.0.1.0, containers >= 0.2.0.0,
-                  parsec >= 2.1.0.1, mtl >= 1.1.0.0
+  Build-Depends:  base, readline >= 1.0.1.0, containers >= 0.1.0.0,
+                  parsec >= 2.1.0.0, mtl >= 1.1.0.0
   ghc-options:    -O2
   Main-Is:        husky.hs
   hs-source-dirs: src
