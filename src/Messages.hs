@@ -31,6 +31,11 @@ import System.IO
 import PrettyPrint
 
 
+-- current version
+version :: String
+version = "0.2"
+
+
 -- | display output somewhat colorful
 husky_result :: IO ()
 husky_result = do
@@ -40,7 +45,8 @@ husky_result = do
 -- | greeting                                                         
 show_greeting :: IO ()                                                
 show_greeting = do                                                    
-  putStrLn "Welcome to husky (v0.1)  (C) 2009 Markus Dittrich"
+  putStrLn $ "Welcome to husky (v" ++ version 
+             ++ ")  (C) 2009 Markus Dittrich"
   putStrLn "-------------------------------------------------"
 
 

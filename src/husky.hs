@@ -23,6 +23,7 @@ module Main where
 
 
 -- imports
+import Data.Map
 import System.Console.Readline
 
 -- local imports
@@ -48,7 +49,8 @@ parse_it state = do
   input <- readline $ color_string Red "husky> "
   case input of 
     Nothing   -> parse_it state
-    Just ":q" -> return ()
+    Just "\\q" -> return ()             -- quit
+    Just "\\v" -> list_variables state  -- list all defined variables
     Just line -> do
 
       addHistory line
@@ -63,3 +65,13 @@ parse_it state = do
 
           >> parse_it newState
 
+
+
+-- | list all currently defined variables
+list_variables :: CalcState -> IO ()
+list_variables state@(CalcState { varMap = theMap }) = 
+  mapM_ print_variable (assocs theMap) 
+  >> parse_it state
+    
+    where
+      print_variable x = putStrLn (fst x ++ " == " ++ (show $ snd x)) 

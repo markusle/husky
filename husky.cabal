@@ -1,5 +1,5 @@
 Name:          husky
-Version:       0.1
+Version:       0.2
 License:       GPL
 license-file:  COPYING
 copyright:     (c) 2008 Markus Dittrich
@@ -8,8 +8,8 @@ Synopsis:      A simple command line calculator.
 Description:   husky is a command line calculator with a small memory 
                footprint. It can be used in a fashion similar to the 
                interactive shells of python, octave, or ruby.   
-Author:        Markus Dittrich <markus.lists@gmail.com>
-Maintainer:    Markus Dittrich <markus.lists@gmail.com>
+Author:        Markus Dittrich <haskelladdict@gmail.com>
+Maintainer:    Markus Dittrich <haskelladdict@gmail.com>
 stability:     alpha
 build-type:    Simple
 Homepage:      http://github.com/markusle/husky/tree/master
