@@ -28,6 +28,7 @@ import Control.Monad
 
 -- local imports
 import CalculatorState
+import ExtraFunctions
 import TokenParser
 
 

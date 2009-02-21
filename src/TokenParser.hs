@@ -29,7 +29,6 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , keywords
                    , OperatorAction
                    , operators
-                   , real_exp 
                    , reservedOp
                    , reserved
                    , stringLiteral
@@ -64,10 +63,22 @@ type OperatorAction = (Double -> Double)
 
 keywords :: [(String, OperatorAction)]
 keywords = [ ("sqrt",sqrt)
-             , ("exp",exp)
-             , ("sin",sin)
-             , ("cos",cos)
-             , ("tan",tan)]
+           , ("exp",exp)
+           , ("log",log)
+           , ("log2", logBase 2)
+           , ("log10", logBase 10)
+           , ("sin",sin)
+           , ("cos",cos)
+           , ("tan",tan)
+           , ("asin", asin)
+           , ("acos", acos)
+           , ("atan", atan)
+           , ("sinh", sinh)
+           , ("cosh", cosh)
+           , ("tanh", tanh)
+           , ("asinh", sinh)
+           , ("acosh", cosh)
+           , ("atanh", atanh)]
 
 
 operators :: [String]
@@ -122,8 +133,3 @@ reservedOp = PT.reservedOp lexer
 -- | token parser for keywords
 reserved :: String -> CharParser st ()
 reserved = PT.reserved lexer
-
-
--- | helper function for defining real powers
-real_exp :: Double -> Double -> Double
-real_exp a x = exp $ x * log a

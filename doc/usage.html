@@ -308,10 +308,14 @@ expressions. All calculations are performed in double
 precision. In addition to the standard operations above,
 the following functions are currently supported:</p>
 <ul class="simple">
-<li>sqrt          : square root</li>
-<li>a^n           : exponentiation (n can be arbitrary double)</li>
-<li>exp           : exponential function</li>
-<li>cos, sin, tan : trigonometric functions</li>
+<li>sqrt                  : square root</li>
+<li>a^n                   : exponentiation (n can be arbitrary double)</li>
+<li>exp                   : exponential function</li>
+<li>ln, log2, log10       : natural, base2, and base10 logarithm</li>
+<li>cos, sin, tan,        : trigonometric functions and inverse
+acos, asin, atan</li>
+<li>cosh, sinh, tanh,     : hyperbolic trigonometric functions
+acosh, asinh, atanh     and inverse</li>
 </ul>
 <p>Furthermore, users can define any number of variables via</p>
 <p><em>variable name</em> = value</p>
@@ -323,8 +327,14 @@ used in expressions and definition of other variables.</p>
 related functionality is available at husky's interactive
 prompt (including command history). See <a class="footnote-reference" href="#id2" id="id1">[1]</a> for more
 detail.</p>
-<p>You can exit a husky session anytime by typing :q at
-the command prompt.</p>
+</div>
+<div class="section" id="command-shortcuts">
+<h1>Command Shortcuts</h1>
+<p>The following commands are available at the command prompt:</p>
+<ul class="simple">
+<li>q       : quit husky</li>
+<li>v       : list all currently defined variables</li>
+</ul>
 </div>
 <div class="section" id="copyright-and-license">
 <h1>COPYRIGHT and LICENSE</h1>
@@ -339,7 +349,7 @@ GNU General Public License Version 3 for more details.</p>
 </div>
 <div class="section" id="bugs">
 <h1>BUGS</h1>
-<p>Please report all bugs to &lt;<a class="reference external" href="mailto:markusle&#64;gmail.com">markusle&#64;gmail.com</a>&gt;. Thank you!</p>
+<p>Please report all bugs to &lt;<a class="reference external" href="mailto:haskelladdict&#64;gmail.com">haskelladdict&#64;gmail.com</a>&gt;. Thank you!</p>
 </div>
 <div class="section" id="references">
 <h1>References</h1>

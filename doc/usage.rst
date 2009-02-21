@@ -20,10 +20,15 @@ expressions. All calculations are performed in double
 precision. In addition to the standard operations above,
 the following functions are currently supported:
 
-- sqrt          : square root
-- a^n           : exponentiation (n can be arbitrary double) 
-- exp           : exponential function
-- cos, sin, tan : trigonometric functions
+- sqrt                  : square root
+- a^n                   : exponentiation (n can be arbitrary double) 
+- exp                   : exponential function
+- ln, log2, log10       : natural, base2, and base10 logarithm
+- cos, sin, tan,        : trigonometric functions and inverse
+  acos, asin, atan
+- cosh, sinh, tanh,     : hyperbolic trigonometric functions 
+  acosh, asinh, atanh     and inverse
+
 
 Furthermore, users can define any number of variables via
 
@@ -39,8 +44,14 @@ related functionality is available at husky's interactive
 prompt (including command history). See [1]_ for more 
 detail.
 
-You can exit a husky session anytime by typing :q at
-the command prompt.
+
+Command Shortcuts
+-----------------
+
+The following commands are available at the command prompt:
+
+- \q       : quit husky
+- \v       : list all currently defined variables
 
 
 COPYRIGHT and LICENSE
@@ -61,7 +72,7 @@ GNU General Public License Version 3 for more details.
 BUGS
 ----
 
-Please report all bugs to <markusle@gmail.com>. Thank you!
+Please report all bugs to <haskelladdict@gmail.com>. Thank you!
 
 
 References

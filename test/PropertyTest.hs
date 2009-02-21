@@ -39,16 +39,19 @@ import TokenParser
 -- and then examine the results afterward
 main :: IO ()
 main = do
+  putStr $ color_string Cyan "\nSimple tests:\n"
   let simple = execWriter $ test_driver defaultCalcState simpleTests
   status1 <- examine_output simple
 
+  putStr $ color_string Cyan "\nFailure tests:\n"
   let failing = execWriter $ test_driver defaultCalcState failingTests
   status2 <- examine_output failing
 
+  putStr $ color_string Cyan "\nVariable tests:\n"
   let vars = execWriter $ test_driver defaultCalcState variableTests
   status3 <- examine_output vars
 
-  let status = status1 && status2 && status3
+  let status = status1 && status2 && status3 
   if status == True then
       exitWith ExitSuccess
     else
@@ -109,7 +112,7 @@ test_driver state (x:xs) = do
         examine_result :: Maybe Double -> Maybe Double -> String 
                        -> Writer [TestResult] ()
         examine_result target actual token = 
-          if target == actual 
+          if (is_equal target actual) 
             then do
                tell [TestResult True token target actual]
                test_driver newState xs
@@ -117,6 +120,16 @@ test_driver state (x:xs) = do
                tell [TestResult False token target actual]
                test_driver newState xs
 
+            where
+              -- we compare doubles x,y for equality by means
+              -- of abs(x-y) <= dbl_epsilon * abs(x)
+              dbl_epsilon = 2.2204460492503131e-16 :: Double
+
+              is_equal Nothing Nothing   = True
+              is_equal (Just a) (Just b) = 
+                  abs(a-b) <= abs(a) * dbl_epsilon
+              is_equal _        _        = False
+                  
  
 -- | our test results consist of a bool indicating success
 -- or failure, the test token as well as the expected and
@@ -242,8 +255,8 @@ failingTest12 = ("b", Nothing)
 variableTests :: [TestCase]
 variableTests = [ variableTest1, variableTest2, variableTest3
                 , variableTest4, variableTest5, variableTest6
-                , variableTest7, variableTest8, variableTest9 ]
-{-               , variableTest10, variableTest11, variableTest12 ] -}
+                , variableTest7, variableTest8, variableTest9
+                , variableTest10, variableTest11, variableTest12 ] 
 
 -- list of failing tests
 variableTest1 :: TestCase
@@ -274,12 +287,11 @@ variableTest9 :: TestCase
 variableTest9 = ("(a*b) - kjhdskfsd123hjksdf", Just 0)
 
 variableTest10 :: TestCase
-variableTest10 = ("c = 2", Nothing) 
+variableTest10 = ("c = 2", Just 2) 
 
 variableTest11 :: TestCase
 variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", Just 168)
 
 variableTest12 :: TestCase
 variableTest12 = ("b^a - c", Just 16777214)
-
 
