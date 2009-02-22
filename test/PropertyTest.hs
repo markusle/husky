@@ -30,6 +30,7 @@ import System.Exit
 -- local imports
 import CalculatorParser
 import CalculatorState
+import ExtraFunctions
 import PrettyPrint
 import TokenParser
 
@@ -123,8 +124,6 @@ test_driver state (x:xs) = do
             where
               -- we compare doubles x,y for equality by means
               -- of abs(x-y) <= dbl_epsilon * abs(x)
-              dbl_epsilon = 2.2204460492503131e-16 :: Double
-
               is_equal Nothing Nothing   = True
               is_equal (Just a) (Just b) = 
                   abs(a-b) <= abs(a) * dbl_epsilon

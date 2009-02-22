@@ -4,7 +4,7 @@ husky command line calculator
 
 :Author: Markus Dittrich
 
-:Version: 0.1 (02/18/2008)
+:Version: 0.2 (02/22/2008)
 
 
 Introduction
@@ -20,14 +20,12 @@ expressions. All calculations are performed in double
 precision. In addition to the standard operations above,
 the following functions are currently supported:
 
-- sqrt                  : square root
-- a^n                   : exponentiation (n can be arbitrary double) 
-- exp                   : exponential function
-- ln, log2, log10       : natural, base2, and base10 logarithm
-- cos, sin, tan,        : trigonometric functions and inverse
-  acos, asin, atan
-- cosh, sinh, tanh,     : hyperbolic trigonometric functions 
-  acosh, asinh, atanh     and inverse
+- *sqrt* : square root
+- *a^n* : exponentiation (n can be arbitrary double) 
+- *exp* : exponential function
+- *ln, log2, log10* : natural, base2, and base10 logarithm
+- *cos, sin, tan, acos, asin, atan*: trigonometric functions and inverse
+- *cosh, sinh, tanh, acosh, asinh, atanh*: hyperbolic trigonometric functions and inverse
 
 
 Furthermore, users can define any number of variables via
@@ -50,8 +48,8 @@ Command Shortcuts
 
 The following commands are available at the command prompt:
 
-- \q       : quit husky
-- \v       : list all currently defined variables
+- \\q       : quit husky
+- \\v       : list all currently defined variables
 
 
 COPYRIGHT and LICENSE

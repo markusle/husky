@@ -1,5 +1,6 @@
 *.hi
 *.o
 husky
+PropertyTest
 *.swp
 TAGS

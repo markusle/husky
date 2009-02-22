@@ -1,0 +1,20 @@
+2008-02-22 Markus Dittrich <haskelladdict@gmail.com>
+
+	* 0.2 release
+	
+	* added builtin trigonometric and hyperbolic 
+	functions.
+
+	* reworked real exponential function in terms of 
+	glibc's pow() function.
+
+	* added ability to list all defined variables via
+	\v
+
+	* improved unit test framework.
+
+
+
+2008-02-18 Markus Dittrich <haskelladdict@gmail.com>
+
+	* 0.1 release

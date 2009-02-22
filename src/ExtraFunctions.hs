@@ -20,12 +20,19 @@
 --------------------------------------------------------------------}
 
 -- | definition of a few additional function (from libc)
-module ExtraFunctions ( real_exp ) where
+module ExtraFunctions ( real_exp 
+                      , dbl_epsilon 
+                      ) where
 
 
 -- imports
 import Foreign()
 import Foreign.C.Types
+
+
+-- | use glibc DBL_EPSILON
+dbl_epsilon :: Double
+dbl_epsilon = 2.2204460492503131e-16
 
 
 -- | helper function for defining real powers
