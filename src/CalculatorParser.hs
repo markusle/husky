@@ -31,6 +31,7 @@ import CalculatorState
 import ExtraFunctions
 import TokenParser
 
+import Debug.Trace
 
 -- | main parser entry point
 calculator :: CharParser CalcState (Maybe Double, CalcState)
@@ -45,21 +46,39 @@ calculator = parse_calc
 --       enters something we don't understand. Otherwise
 --       parsing fails and we loose our state.
 parse_calc :: CharParser CalcState (Maybe Double)
-parse_calc =  try define_variable 
+parse_calc =  try unit_conversion 
+          <|> try define_variable 
           <|> try (add_term >>= \x -> end_of_line >> return (Just x))
           <|> return Nothing
           <?> "math expression, variable definition " ++
               "or variable name"
 
 
+-- | the user can request a conversion between to compatible
+-- unit-full values (temperatures, lengths, ...).
+-- The command is "conv <unit1> <unit2> <value in unit1>" and
+-- returns <value in unit2>
+unit_conversion :: CharParser CalcState (Maybe Double)
+unit_conversion = (spaces
+                  >> reserved "conv"
+                  >> spaces 
+                  >> unit
+                  >>= \unitSpec1 -> spaces
+                  >> unit
+                  >>= \unitSpec2 -> spaces
+                  >> parse_number
+                  >>= \value -> return Nothing )
+               <?> "unit conversion"
+ 
+
 -- | if the line starts off with a string we either
 -- have a variable definition or want to show the value
 -- stored in a variable
 define_variable :: CharParser CalcState (Maybe Double)
 define_variable = (spaces
-                 >> variable
-                 >>= \varName -> variable_def varName )
-              <?> "variable definition"
+                  >> variable
+                  >>= \varName -> variable_def varName )
+               <?> "variable definition"
 
 
 -- | check that we are at the end of the line; otherwise
@@ -135,7 +154,7 @@ factor = parens add_term
 
 -- | parse all operations we currently know about
 parse_keywords :: CharParser CalcState Double
-parse_keywords = msum $ extract_ops keywords
+parse_keywords = msum $ extract_ops builtinFunctions
 
     where
       extract_ops = foldr (\(x,y) acc -> 

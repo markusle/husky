@@ -20,6 +20,7 @@
 
 -- | functionality related to parsing tokens
 module TokenParser ( module Text.ParserCombinators.Parsec
+                   , builtinFunctions
                    , float
                    , identifier
                    , integer
@@ -32,6 +33,7 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , reservedOp
                    , reserved
                    , stringLiteral
+                   , unit
                    , variable ) where
 
 
@@ -56,30 +58,41 @@ variable = letter
            >>= \rest  -> return $ [first] ++ rest
 
 
+-- | an identifier for a unit is nothing by a variable
+-- (at least for now)
+unit :: CharParser CalcState String
+unit = variable
+
 
 -- | these are all the names and corresponding functions
 -- of keywords we know about
 type OperatorAction = (Double -> Double)
 
-keywords :: [(String, OperatorAction)]
-keywords = [ ("sqrt",sqrt)
-           , ("exp",exp)
-           , ("log",log)
-           , ("log2", logBase 2)
-           , ("log10", logBase 10)
-           , ("sin",sin)
-           , ("cos",cos)
-           , ("tan",tan)
-           , ("asin", asin)
-           , ("acos", acos)
-           , ("atan", atan)
-           , ("sinh", sinh)
-           , ("cosh", cosh)
-           , ("tanh", tanh)
-           , ("asinh", sinh)
-           , ("acosh", cosh)
-           , ("atanh", atanh)]
 
+-- | builtin functions of the form (a -> b)
+builtinFunctions :: [(String, OperatorAction)]
+builtinFunctions = [ ("sqrt",sqrt)
+                   , ("exp",exp)
+                   , ("log",log)
+                   , ("log2", logBase 2)
+                   , ("log10", logBase 10)
+                   , ("sin",sin)
+                   , ("cos",cos)
+                   , ("tan",tan)
+                   , ("asin", asin)
+                   , ("acos", acos)
+                   , ("atan", atan)
+                   , ("sinh", sinh)
+                   , ("cosh", cosh)
+                   , ("tanh", tanh)
+                   , ("asinh", sinh)
+                   , ("acosh", cosh)
+                   , ("atanh", atanh)]
+
+
+-- | all other keywords that are not regular functions
+keywords :: [String]
+keywords = ["conv"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]
@@ -92,7 +105,9 @@ operators = ["*","/","+","-","="]
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
          ( haskellDef { reservedOpNames = operators
-                      , reservedNames   = map fst keywords } )
+                      , reservedNames   = keywords 
+                                          ++ map fst builtinFunctions 
+                      } )
 
 
 -- | token parser for parenthesis
