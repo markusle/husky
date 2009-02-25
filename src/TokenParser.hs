@@ -34,6 +34,7 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , reserved
                    , stringLiteral
                    , unit
+                   , unit_type
                    , variable ) where
 
 
@@ -58,10 +59,13 @@ variable = letter
            >>= \rest  -> return $ [first] ++ rest
 
 
--- | an identifier for a unit is nothing by a variable
--- (at least for now)
+-- | an identifier for a unit and unit_type is just a variable 
+-- (at least for now). 
 unit :: CharParser CalcState String
 unit = variable
+
+unit_type :: CharParser CalcState String
+unit_type = variable
 
 
 -- | these are all the names and corresponding functions

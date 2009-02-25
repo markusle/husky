@@ -30,6 +30,7 @@ import Control.Monad
 import CalculatorState
 import ExtraFunctions
 import TokenParser
+import UnitConverter
 
 import Debug.Trace
 
@@ -63,13 +64,29 @@ unit_conversion = (spaces
                   >> reserved "conv"
                   >> spaces 
                   >> unit
-                  >>= \unitSpec1 -> spaces
+                  >>= \unit1 -> spaces
                   >> unit
-                  >>= \unitSpec2 -> spaces
+                  >>= \unit2 -> spaces
                   >> parse_number
-                  >>= \value -> return Nothing )
+                  >>= \value -> spaces
+                  >> optionMaybe parse_unit_type 
+                  >>= \unitType ->
+                    case convert_unit unit1 unit2 unitType value of
+                      Left e      -> pzero
+                      Right value -> return (Just value) )
                <?> "unit conversion"
  
+
+-- | this parser parses an (optional) unit type signature following 
+-- a unit conversion statement. It should be of the form 
+-- (a la Haskell ;) ) " :: unit_type "
+parse_unit_type :: CharParser CalcState String
+parse_unit_type = (spaces
+                  >> string "::"
+                  >> spaces
+                  >> unit_type )
+               <?> "unit_type"
+
 
 -- | if the line starts off with a string we either
 -- have a variable definition or want to show the value
