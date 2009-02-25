@@ -21,11 +21,16 @@
 -- | routines called from the toplevel readline instance without
 -- before any parsing is done, aka info routines of any sort and
 -- shape
-module InfoRoutines ( list_variables ) where
+module InfoRoutines ( list_variables 
+                    , show_time
+                    ) where
 
 
 -- imports
 import Data.Map
+import Data.Time
+import System.Locale
+
 
 -- local imports
 import CalculatorState
@@ -38,3 +43,17 @@ list_variables (CalcState { varMap = theMap }) =
 
     where
       print_variable x = putStrLn (fst x ++ " == " ++ (show $ snd x)) 
+
+
+-- | display the current localtime
+show_time :: IO ()
+show_time = getCurrentTime
+            >>= \utcTime -> getTimeZone utcTime 
+            >>= \zone -> 
+                let 
+                    localTime  = utcToLocalTime zone utcTime 
+                    timeString = formatTime defaultTimeLocale "%c" 
+                                 localTime 
+                in
+                  putStrLn timeString
+

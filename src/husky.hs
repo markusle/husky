@@ -29,10 +29,10 @@ import System.Console.Readline
 -- local imports
 import CalculatorParser
 import CalculatorState
+import InfoRoutines
 import Messages
 import PrettyPrint
 import TokenParser
-import InfoRoutines
 
 
 -- | main
@@ -52,6 +52,8 @@ parse_it state = do
     Nothing   -> parse_it state
     Just "\\q" -> return ()             -- quit
     Just "\\v" -> list_variables state  -- list all defined variables
+                  >> parse_it state
+    Just "\\t" -> show_time             -- show current time
                   >> parse_it state
     Just line -> do
 
