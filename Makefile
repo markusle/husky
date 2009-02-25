@@ -12,7 +12,8 @@ GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \
-	  src/ExtraFunctions.hs src/PrettyPrint.hs src/TokenParser.hs
+	  src/ExtraFunctions.hs src/PrettyPrint.hs src/TokenParser.hs \
+	  src/InfoRoutines.hs
 
 all: husky
 

@@ -23,7 +23,7 @@ module Main where
 
 
 -- imports
-import Data.Map
+--import Data.Map
 import System.Console.Readline
 
 -- local imports
@@ -32,6 +32,7 @@ import CalculatorState
 import Messages
 import PrettyPrint
 import TokenParser
+import InfoRoutines
 
 
 -- | main
@@ -51,6 +52,7 @@ parse_it state = do
     Nothing   -> parse_it state
     Just "\\q" -> return ()             -- quit
     Just "\\v" -> list_variables state  -- list all defined variables
+                  >> parse_it state
     Just line -> do
 
       addHistory line
@@ -64,14 +66,3 @@ parse_it state = do
             Just val -> husky_result >> putStrLn (show val)
 
           >> parse_it newState
-
-
-
--- | list all currently defined variables
-list_variables :: CalcState -> IO ()
-list_variables state@(CalcState { varMap = theMap }) = 
-  mapM_ print_variable (assocs theMap) 
-  >> parse_it state
-    
-    where
-      print_variable x = putStrLn (fst x ++ " == " ++ (show $ snd x)) 
