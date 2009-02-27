@@ -72,8 +72,8 @@ unit_conversion = (spaces
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
-                      Left e      -> pzero
-                      Right value -> return (Just value) )
+                      Nothing    -> pzero
+                      Just conv  -> return (Just conv) )
                <?> "unit conversion"
  
 
