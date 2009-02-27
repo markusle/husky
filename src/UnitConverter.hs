@@ -28,22 +28,46 @@ import qualified Data.Map as M
 
 
 -- | function in charge of the main unit conversion
+-- There are possible paths:
+-- 1) The user did not supply a unit type specifier. In this case
+--    we look through all available unit maps for a matching
+--    conversion routine. If we find more than one we'll abort
+--    with a hopefully useful error message.
+-- 2) If a user supplies a unit type specifier we directly look
+--    through the corresponding map for a conversion
 convert_unit :: String -> String -> Maybe String -> Double 
              -> Maybe Double 
 convert_unit unit1 unit2 unitType value = 
     
     case unitType of
-      Nothing -> case M.lookup (unit1 ++ unit2) tempConv of
-                     Nothing -> Nothing
-                     Just a  -> Just (converter a $ value)
       
-      Just unit -> Nothing
+      -- no unit type specifier: look through all unit maps
+      Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
+                   []        -> Nothing   
+                   a@(x:xs)  -> case length a of
+                                  1 -> Just (converter x $ value)
+                                  _ -> Nothing
+      
+      -- the user supplied a unit type: grab the proper map and look
+      Just unit -> case M.lookup unit allConv of
+                     Nothing -> Nothing
+                     Just a  -> case M.lookup (unit1 ++ unit2) a of
+                                 Nothing -> Nothing
+                                 Just x  -> Just (converter x $ value)
+                   
+
+-- | helper function looking through all unit maps for a matching
+-- conversion routine
+unit_lookup :: String -> M.Map String UnitMap -> [UnitConverter]
+unit_lookup key = M.fold append_val [] 
+   where
+     append_val entry acc = case M.lookup key entry of
+                              Nothing -> acc
+                              Just a  -> a:acc
 
 
-
-
--- | data struct holding the neccesary bits for a conversion
--- operation
+-- | UnitConverter holds all information known about 
+-- a particular unit conversion 
 data UnitConverter = 
     UnitConverter 
     { converter   :: (Double -> Double)  -- actual conversion fctn
@@ -51,15 +75,25 @@ data UnitConverter =
     }
 
 
+-- | unitMap holds all available conversions for a particular
+-- unit type
+type UnitMap = M.Map String UnitConverter
+
+
+-- | allConv holds a map of all available unit conversions
+-- indexed by the unit type such as Temp, Length, ....
+allConv :: M.Map String UnitMap
+allConv = M.fromList [ ("Temp", tempConv) ]
+
 
 -- | temperature conversions
 
 -- | data structure holding temparature conversion units
-tempConv :: M.Map String UnitConverter
+tempConv :: UnitMap
 tempConv = M.fromList [ ("FC", fc_conv) ]
 
 
--- | convert Celcius into Fahrenheot
+-- | convert Celcius into Fahrenheit
 fc_conv = UnitConverter 
           { converter   = \x -> (5/9)*(x-32)
           , description = "Fahrenheit to Celsius"
