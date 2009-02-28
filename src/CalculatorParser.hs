@@ -32,10 +32,9 @@ import ExtraFunctions
 import TokenParser
 import UnitConverter
 
-import Debug.Trace
 
 -- | main parser entry point
-calculator :: CharParser CalcState (Maybe Double, CalcState)
+calculator :: CharParser CalcState (Double, CalcState)
 calculator = parse_calc 
              >>= \val -> getState
              >>= \state -> return (val, state)
@@ -46,11 +45,10 @@ calculator = parse_calc
 --       catch all parsing rule in case the user
 --       enters something we don't understand. Otherwise
 --       parsing fails and we loose our state.
-parse_calc :: CharParser CalcState (Maybe Double)
-parse_calc =  try unit_conversion 
+parse_calc :: CharParser CalcState Double
+parse_calc =  unit_conversion 
           <|> try define_variable 
-          <|> (add_term >>= \x -> end_of_line >> return (Just x))
-          <|> return Nothing
+          <|> (add_term >>= \x -> end_of_line >> return x)
           <?> "math expression, variable definition " ++
               "or variable name"
 
@@ -59,7 +57,7 @@ parse_calc =  try unit_conversion
 -- unit-full values (temperatures, lengths, ...).
 -- The command is "conv <unit1> <unit2> <value in unit1>" and
 -- returns <value in unit2>
-unit_conversion :: CharParser CalcState (Maybe Double)
+unit_conversion :: CharParser CalcState Double
 unit_conversion = (spaces
                   >> reserved "conv"
                   >> spaces 
@@ -72,10 +70,25 @@ unit_conversion = (spaces
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
-                      Nothing    -> pzero
-                      Just conv  -> return (Just conv) )
+                      Left err   -> add_error_message err  
+                                    >> return 0
+                      Right conv -> return conv )
                <?> "unit conversion"
  
+
+
+-- | this function adds an error message to the queue of
+-- special (outside of parsing errors) to the error
+-- queue
+add_error_message :: String -> CharParser CalcState ()
+add_error_message message = 
+    getState 
+    >>= \state@(CalcState { errValue = val }) -> 
+        let newState = state { errState = True
+                             , errValue = message:val
+                             }
+        in setState newState
+
 
 -- | this parser parses an (optional) unit type signature following 
 -- a unit conversion statement. It should be of the form 
@@ -91,7 +104,7 @@ parse_unit_type = (spaces
 -- | if the line starts off with a string we either
 -- have a variable definition or want to show the value
 -- stored in a variable
-define_variable :: CharParser CalcState (Maybe Double)
+define_variable :: CharParser CalcState Double
 define_variable = (spaces
                   >> variable
                   >>= \varName -> variable_def varName )
@@ -109,7 +122,7 @@ end_of_line = getInput >>= \input ->
 
 
 -- | define a variable
-variable_def :: String -> CharParser CalcState (Maybe Double)
+variable_def :: String -> CharParser CalcState Double
 variable_def varName = ( spaces
                 >> reservedOp "=" 
                 >> spaces 
@@ -119,18 +132,18 @@ variable_def varName = ( spaces
 
 
 -- | define a variable via a literal double
-variable_def_by_value :: String -> CharParser CalcState (Maybe Double)
+variable_def_by_value :: String -> CharParser CalcState Double
 variable_def_by_value varName = ( add_term
             >>= \value -> updateState (insert_variable value varName)
-            >> return (Just value) )
+            >> return value )
           <?> "variable from value"
 
 
 -- | define a variable via the value of another variable
-variable_def_by_var :: String -> CharParser CalcState (Maybe Double)
+variable_def_by_var :: String -> CharParser CalcState Double
 variable_def_by_var varName = parse_variable 
             >>= \value -> updateState (insert_variable value varName)
-            >> return (Just value)
+            >> return value
              
 
 -- | look for the value of a given variable if any

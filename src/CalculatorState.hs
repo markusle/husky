@@ -22,6 +22,7 @@
 -- the calculator. Eventually, these might all find a home
 -- in their separate modules
 module CalculatorState ( CalcState(..)
+                       , have_special_error
                        , defaultCalcState 
                        , insert_variable
                        ) where
@@ -33,17 +34,40 @@ import qualified Data.Map as M
 
 -- | this data structure provides some state information
 -- to the calculator (variables, etc ...)
-data CalcState = CalcState { varMap :: M.Map String Double }
+-- Currently, we thread the following pieces of information:
+-- varMap   : map with all currently defined variable/value pairs
+-- errState : bool indicating that any special error messages
+--            have been queued
+-- errValue : [String] holding all special error messages
+data CalcState = CalcState 
+    { 
+      varMap   :: M.Map String Double 
+    , errState :: Bool
+    , errValue :: [String]
+    }
+
 
 defaultCalcState :: CalcState
-defaultCalcState = CalcState { varMap = M.fromList constantList }
+defaultCalcState = CalcState 
+    { 
+      varMap   = M.fromList constantList 
+    , errState = False
+    , errValue = []
+    }
 
 
 -- | function adding a new variable to the database
 insert_variable :: Double -> String -> CalcState -> CalcState
-insert_variable num name (CalcState { varMap = theMap }) =
-    CalcState { varMap = M.insert name num theMap } 
+insert_variable num name state@(CalcState { varMap = theMap }) =
+    state { varMap = M.insert name num theMap } 
 
+
+-- | function returning special error message if present
+have_special_error :: CalcState -> Maybe String
+have_special_error (CalcState { errState = state, errValue = msg }) =
+    if state 
+       then Just . unlines $ msg
+       else Nothing
 
 
 -- | provide a few useful mathematical constants that we

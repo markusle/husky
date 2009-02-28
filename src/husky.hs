@@ -61,11 +61,17 @@ parse_it state = do
 
       -- parse it
       case runParser calculator state "" line of
+
         Left er  -> (putStrLn $ "Error: " ++ show er)
                     >> parse_it state
-        Right (result, newState) -> 
-          case result of
-            Nothing  -> parse_error line
-            Just val -> husky_result >> putStrLn (show val)
 
+        -- if the parser succeeds we still check for special
+        -- error conditions in our parse state that may have
+        -- been triggered by errors outside the parser (e.g.,
+        -- unit conversion may have failed for lack of proper
+        -- conversion function etc.)
+        Right (result, newState) -> 
+          case have_special_error newState of
+             Nothing -> husky_result >> putStrLn (show result)
+             Just err -> (putStrLn $ "Error: " ++ err)
           >> parse_it newState
