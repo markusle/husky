@@ -49,7 +49,7 @@ calculator = parse_calc
 parse_calc :: CharParser CalcState (Maybe Double)
 parse_calc =  try unit_conversion 
           <|> try define_variable 
-          <|> try (add_term >>= \x -> end_of_line >> return (Just x))
+          <|> (add_term >>= \x -> end_of_line >> return (Just x))
           <|> return Nothing
           <?> "math expression, variable definition " ++
               "or variable name"

@@ -61,7 +61,8 @@ parse_it state = do
 
       -- parse it
       case runParser calculator state "" line of
-        Left er  -> putStrLn $ "Error: " ++ (show er)
+        Left er  -> (putStrLn $ "Error: " ++ show er)
+                    >> parse_it state
         Right (result, newState) -> 
           case result of
             Nothing  -> parse_error line
