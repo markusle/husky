@@ -25,6 +25,7 @@ module CalculatorState ( CalcState(..)
                        , have_special_error
                        , defaultCalcState 
                        , insert_variable
+                       , reset_error_queue
                        ) where
 
 
@@ -68,6 +69,10 @@ have_special_error (CalcState { errState = state, errValue = msg }) =
     if state 
        then Just . unlines $ msg
        else Nothing
+
+-- | function resetting the special error queue 
+reset_error_queue :: CalcState -> CalcState
+reset_error_queue state = state { errState = False, errValue = [] }
 
 
 -- | provide a few useful mathematical constants that we

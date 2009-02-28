@@ -73,5 +73,7 @@ parse_it state = do
         Right (result, newState) -> 
           case have_special_error newState of
              Nothing -> husky_result >> putStrLn (show result)
-             Just err -> (putStrLn $ "Error: " ++ err)
-          >> parse_it newState
+             Just err -> (putStr $ "Error: " ++ err)
+          >> let cleanState = reset_error_queue newState in
+             parse_it cleanState
+

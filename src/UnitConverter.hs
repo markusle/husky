@@ -42,18 +42,29 @@ convert_unit unit1 unit2 unitType value =
   case unitType of
      -- no unit type specifier: look through all unit maps
     Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
-                 []        -> Left "Unit conversion failed"
+                 []        -> Left unit_conv_error 
                  a@(x:xs)  -> case length a of
                                 1 -> Right (converter x $ value)
-                                _ -> Left "Unit conversion failed"
+                                _ -> Left too_many_matches
       
     -- the user supplied a unit type: grab the proper map and look
     Just unit -> case M.lookup unit allConv of
-                   Nothing -> Left "Unit conversion failed"
+                   Nothing -> Left $ no_unit_error unit
                    Just a  -> case M.lookup (unit1 ++ unit2) a of
-                                Nothing -> Left "Unit conversion failed"
+                                Nothing -> Left unit_conv_error
                                 Just x  -> Right (converter x $ value)
                    
+  where
+    -- unit conversion errors
+    unit_conv_error  = "No unit conversion known for " 
+                       ++ unit1 ++ " to " ++ unit2 ++ "!"
+
+    no_unit_error a  = "Don't know unit " ++ a ++ "!"
+
+    too_many_matches = "More than one unit conversion matched.\n"
+                       ++ "Consider disambiguating with an explicit "
+                       ++ "unit type."
+
 
 -- | helper function looking through all unit maps for a matching
 -- conversion routine
