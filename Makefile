@@ -27,8 +27,8 @@ debug: $(OBJECTS)
 
 
 check: $(OBJECTS)
-	ghc -i./src --make test/PropertyTest.hs
-	./test/PropertyTest
+	ghc -i./src --make test/CalculatorTest.hs
+	./test/CalculatorTest
 
 install: husky
 	install -d $(docdir)
@@ -43,4 +43,4 @@ install: husky
 
 clean:
 	rm -f src/*.o src/*.hi src/husky test/*.o test/*.hi \
-		test/PropertyTest
+		test/CalculatorTest

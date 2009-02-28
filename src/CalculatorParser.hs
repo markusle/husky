@@ -46,7 +46,7 @@ calculator = parse_calc
 --       enters something we don't understand. Otherwise
 --       parsing fails and we loose our state.
 parse_calc :: CharParser CalcState Double
-parse_calc =  unit_conversion 
+parse_calc =  try unit_conversion 
           <|> try define_variable 
           <|> (add_term >>= \x -> end_of_line >> return x)
           <?> "math expression, variable definition " ++

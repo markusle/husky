@@ -39,21 +39,20 @@ convert_unit :: String -> String -> Maybe String -> Double
              -> Either String Double 
 convert_unit unit1 unit2 unitType value = 
     
-    case unitType of
+  case unitType of
+     -- no unit type specifier: look through all unit maps
+    Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
+                 []        -> Left "Unit conversion failed"
+                 a@(x:xs)  -> case length a of
+                                1 -> Right (converter x $ value)
+                                _ -> Left "Unit conversion failed"
       
-      -- no unit type specifier: look through all unit maps
-      Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
-                   []        -> Left "Unit conversion failed"
-                   a@(x:xs)  -> case length a of
-                                  1 -> Right (converter x $ value)
-                                  _ -> Left "Unit conversion failed"
-      
-      -- the user supplied a unit type: grab the proper map and look
-      Just unit -> case M.lookup unit allConv of
-                     Nothing -> Left "Unit conversion failed"
-                     Just a  -> case M.lookup (unit1 ++ unit2) a of
-                                 Nothing -> Left "Unit conversion failed"
-                                 Just x  -> Right (converter x $ value)
+    -- the user supplied a unit type: grab the proper map and look
+    Just unit -> case M.lookup unit allConv of
+                   Nothing -> Left "Unit conversion failed"
+                   Just a  -> case M.lookup (unit1 ++ unit2) a of
+                                Nothing -> Left "Unit conversion failed"
+                                Just x  -> Right (converter x $ value)
                    
 
 -- | helper function looking through all unit maps for a matching
