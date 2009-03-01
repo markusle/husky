@@ -24,6 +24,7 @@ module UnitConverter ( convert_unit ) where
                       
 
 -- imports
+import Data.Char
 import qualified Data.Map as M
 
 
@@ -41,18 +42,18 @@ convert_unit unit1 unit2 unitType value =
     
   case unitType of
      -- no unit type specifier: look through all unit maps
-    Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
+    Nothing -> case unit_lookup (make_key unit1 unit2) allConv of
                  []        -> Left unit_conv_error 
                  a@(x:xs)  -> case length a of
                                 1 -> Right (converter x $ value)
                                 _ -> Left too_many_matches
       
     -- the user supplied a unit type: grab the proper map and look
-    Just unit -> case M.lookup unit allConv of
-                   Nothing -> Left $ no_unit_error unit
-                   Just a  -> case M.lookup (unit1 ++ unit2) a of
-                                Nothing -> Left unit_conv_error
-                                Just x  -> Right (converter x $ value)
+    Just u -> case M.lookup u allConv of
+                Nothing -> Left $ no_unit_error u
+                Just a  -> case M.lookup (make_key unit1 unit2) a of
+                             Nothing -> Left unit_conv_error
+                             Just x  -> Right (converter x $ value)
                    
   where
     -- unit conversion errors
@@ -64,6 +65,15 @@ convert_unit unit1 unit2 unitType value =
     too_many_matches = "More than one unit conversion matched.\n"
                        ++ "Consider disambiguating with an explicit "
                        ++ "unit type."
+
+    -- function generating the lookup key into the unit maps
+    -- based on two given unit strings
+    -- NOTE: for now we convert all units into all caps
+    make_key :: String -> String -> String
+    make_key unit1 unit2 = (caps unit1) ++ (caps unit2)
+      where
+        caps = map toUpper
+    
 
 
 -- | helper function looking through all unit maps for a matching
@@ -97,17 +107,54 @@ allConv = M.fromList [ ("Temp", tempConv) ]
 
 
 -- | temperature conversions
+-- Most of them come from the NIST as published at
+-- http://physics.nist.gov/Pubs/SP811/appenB9.html#TEMPERATURE
 
 -- | data structure holding temparature conversion units
 tempConv :: UnitMap
-tempConv = M.fromList [ ("FC", fc_conv) ]
+tempConv = M.fromList [ ("FC", fc_conv_temp) 
+                      , ("CF", cf_conv_temp)
+                      , ("CK", ck_conv_temp)
+                      , ("KC", kc_conv_temp)
+                      , ("FK", fk_conv_temp)
+                      , ("KF", kf_conv_temp)
+                      ]
 
 
--- | convert Celcius into Fahrenheit
-fc_conv = UnitConverter 
-          { converter   = \x -> (5/9)*(x-32)
-          , description = "Fahrenheit to Celsius"
-          }
+-- | convert Fahrenheit to Celcius
+fc_conv_temp = UnitConverter 
+               { converter   = \x -> (5/9)*(x-32)
+               , description = "Fahrenheit to Celsius"
+               }
+
+-- | convert Celcius to Fahrenheit
+cf_conv_temp = UnitConverter 
+               { converter   = \x -> (9/5)*x + 32
+               , description = "Celsius to Fahrenheit"
+               }
 
 
+-- | convert Celius to Kelvin 
+ck_conv_temp = UnitConverter 
+               { converter   = \x -> x + 273.15
+               , description = "Celsius to Kelvin"
+               }
 
+-- | convert Kelvin to Celcius
+kc_conv_temp = UnitConverter 
+               { converter   = \x -> x - 273.15
+               , description = "Kelvin to Celcius"
+               }
+
+
+-- | convert Fahrenheit to Kelvin
+kf_conv_temp = UnitConverter 
+               { converter   = \x -> (5/9)*(x + 459.67)
+               , description = "Fahrenheit to Kelvin"
+               }
+
+-- | convert Kelvin to Fahrenheit
+fk_conv_temp = UnitConverter 
+               { converter   = \x -> (9/5)*x - 459.67
+               , description = "Fahrenheit to Kelvin"
+               }

@@ -59,7 +59,7 @@ parse_calc =  try unit_conversion
 -- returns <value in unit2>
 unit_conversion :: CharParser CalcState Double
 unit_conversion = (spaces
-                  >> reserved "conv"
+                  >> conversion_keyword
                   >> spaces 
                   >> unit
                   >>= \unit1 -> spaces
@@ -75,6 +75,12 @@ unit_conversion = (spaces
                       Right conv -> return conv )
                <?> "unit conversion"
  
+
+-- | parse for all acceptable conversion keywords
+conversion_keyword :: CharParser CalcState ()
+conversion_keyword = try (reserved "c") 
+                  <|> (reserved "convert")
+                  <?> "(c)onv keyword"
 
 
 -- | this function adds an error message to the queue of

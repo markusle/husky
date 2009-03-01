@@ -96,7 +96,7 @@ builtinFunctions = [ ("sqrt",sqrt)
 
 -- | all other keywords that are not regular functions
 keywords :: [String]
-keywords = ["conv"]
+keywords = ["convert","c"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]
