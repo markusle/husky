@@ -58,15 +58,15 @@ parse_calc =  try unit_conversion
 -- The command is "conv <unit1> <unit2> <value in unit1>" and
 -- returns <value in unit2>
 unit_conversion :: CharParser CalcState Double
-unit_conversion = (spaces
+unit_conversion = (whiteSpace
                   >> conversion_keyword
-                  >> spaces 
+                  >> whiteSpace
                   >> unit
-                  >>= \unit1 -> spaces
+                  >>= \unit1 -> whiteSpace
                   >> unit
-                  >>= \unit2 -> spaces
+                  >>= \unit2 -> whiteSpace
                   >> parse_number
-                  >>= \value -> spaces
+                  >>= \value -> whiteSpace
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
@@ -78,8 +78,8 @@ unit_conversion = (spaces
 
 -- | parse for all acceptable conversion keywords
 conversion_keyword :: CharParser CalcState ()
-conversion_keyword = try (reserved "c") 
-                  <|> (reserved "convert")
+conversion_keyword = reserved "c" 
+                  <|> reserved "convert"
                   <?> "(c)onv keyword"
 
 
@@ -100,9 +100,9 @@ add_error_message message =
 -- a unit conversion statement. It should be of the form 
 -- (a la Haskell ;) ) " :: unit_type "
 parse_unit_type :: CharParser CalcState String
-parse_unit_type = (spaces
+parse_unit_type = (whiteSpace
                   >> string "::"
-                  >> spaces
+                  >> whiteSpace
                   >> unit_type )
                <?> "unit_type"
 
@@ -111,7 +111,7 @@ parse_unit_type = (spaces
 -- have a variable definition or want to show the value
 -- stored in a variable
 define_variable :: CharParser CalcState Double
-define_variable = (spaces
+define_variable = (whiteSpace
                   >> variable
                   >>= \varName -> variable_def varName )
                <?> "variable definition"
@@ -129,9 +129,9 @@ end_of_line = getInput >>= \input ->
 
 -- | define a variable
 variable_def :: String -> CharParser CalcState Double
-variable_def varName = ( spaces
+variable_def varName = ( whiteSpace
                 >> reservedOp "=" 
-                >> spaces 
+                >> whiteSpace 
                 >> ( variable_def_by_value varName 
                     <|> variable_def_by_var varName)  )
             <?> "variable"
@@ -155,7 +155,7 @@ variable_def_by_var varName = parse_variable
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
 parse_variable = ( variable 
-                  >>= \val -> spaces
+                  >>= \val -> whiteSpace
                   >> get_variable_value val
                   >>= \result -> case result of
                         Just a  -> return a 
@@ -175,7 +175,7 @@ mul_term = exp_term `chainl1` multiply_action
 
 -- | parser for potentiation operations "^"
 exp_term :: CharParser CalcState Double
-exp_term = (spaces >> factor) `chainl1` exp_action
+exp_term = (whiteSpace >> factor) `chainl1` exp_action
 
 
 -- | parser for individual factors, i.e, numbers,

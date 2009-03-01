@@ -35,7 +35,9 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , stringLiteral
                    , unit
                    , unit_type
-                   , variable ) where
+                   , variable 
+                   , whiteSpace
+                   ) where
 
 
 -- imports
@@ -105,7 +107,7 @@ operators = ["*","/","+","-","="]
 {- | prepare needed parsers from Parsec.Token -}
 
 -- | function generating a token parser based on a 
--- lexical parsers combined with a language record definition
+-- lexical parser combined with a language record definition
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
          ( haskellDef { reservedOpNames = operators
@@ -152,3 +154,7 @@ reservedOp = PT.reservedOp lexer
 -- | token parser for keywords
 reserved :: String -> CharParser st ()
 reserved = PT.reserved lexer
+
+-- | token parser for whitespace
+whiteSpace :: CharParser st ()
+whiteSpace = PT.whiteSpace lexer
