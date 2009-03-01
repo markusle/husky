@@ -55,7 +55,7 @@ parse_it state = do
                   >> parse_it state
     Just "\\t" -> show_time             -- show current time
                   >> parse_it state
-    Just line -> do
+    Just line -> do                     -- otherwise calculate 
 
       addHistory line
 
@@ -72,8 +72,11 @@ parse_it state = do
         -- conversion function etc.)
         Right (result, newState) -> 
           case have_special_error newState of
-             Nothing -> husky_result >> putStrLn (show result)
              Just err -> (putStr $ "Error: " ++ err)
-          >> let cleanState = reset_error_queue newState in
+             Nothing  -> case have_unit newState of
+                           Nothing -> husky_result [show result]
+                           Just u  -> husky_result $ (show result):[u]
+
+          >> let cleanState = reset_state newState in
              parse_it cleanState
 

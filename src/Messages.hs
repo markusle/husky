@@ -37,9 +37,10 @@ version = "0.2"
 
 
 -- | display output somewhat colorful
-husky_result :: IO ()
-husky_result = do
+husky_result :: [String] -> IO ()
+husky_result items = do
   putStr $ color_string Yellow "=> "
+  putStrLn $ unwords items
 
 
 -- | greeting                                                         

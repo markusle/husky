@@ -33,7 +33,7 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , reservedOp
                    , reserved
                    , stringLiteral
-                   , unit
+                   , unit_value
                    , unit_type
                    , variable 
                    , whiteSpace
@@ -61,10 +61,10 @@ variable = letter
            >>= \rest  -> return $ [first] ++ rest
 
 
--- | an identifier for a unit and unit_type is just a variable 
+-- | an identifier for a unit_value and unit_type is just a variable 
 -- (at least for now). 
-unit :: CharParser CalcState String
-unit = variable
+unit_value :: CharParser CalcState String
+unit_value = variable
 
 unit_type :: CharParser CalcState String
 unit_type = variable
@@ -98,7 +98,7 @@ builtinFunctions = [ ("sqrt",sqrt)
 
 -- | all other keywords that are not regular functions
 keywords :: [String]
-keywords = ["convert","c"]
+keywords = ["convert","c","units"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]

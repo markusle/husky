@@ -49,32 +49,44 @@ parse_calc :: CharParser CalcState Double
 parse_calc =  try unit_conversion 
           <|> try define_variable 
           <|> (add_term >>= \x -> end_of_line >> return x)
-          <?> "math expression, variable definition " ++
-              "or variable name"
+          <?> "math expression, variable definition, " ++
+              "variable name, or unit conversion"
 
 
 -- | the user can request a conversion between to compatible
 -- unit-full values (temperatures, lengths, ...).
--- The command is "conv <unit1> <unit2> <value in unit1>" and
--- returns <value in unit2>
+-- The command spec is 
+--     conv <value in unit1> <unit1> <unit2> [ :: <unit type> ] 
+-- and returns <value in unit2>
 unit_conversion :: CharParser CalcState Double
 unit_conversion = (whiteSpace
                   >> conversion_keyword
                   >> whiteSpace
-                  >> unit
-                  >>= \unit1 -> whiteSpace
-                  >> unit
-                  >>= \unit2 -> whiteSpace
-                  >> parse_number
+                  >> parse_unit_value
                   >>= \value -> whiteSpace
+                  >> unit_value
+                  >>= \unit1 -> whiteSpace
+                  >> unit_value
+                  >>= \unit2 -> whiteSpace
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
-                      Left err   -> add_error_message err  
-                                    >> return 0
-                      Right conv -> return conv )
+                      Left err            -> add_error_message err  
+                                             >> return 0
+                      Right (conv, unit)  -> add_unit unit 
+                                             >> return conv )
                <?> "unit conversion"
  
+
+-- | parse a unit value
+-- We can't use parse_number since we'd like to explictly allow
+-- things like 1m or 2yd which parse_number rejects
+parse_unit_value :: CharParser CalcState Double
+parse_unit_value = naturalOrFloat 
+                   >>= \num -> case num of 
+                                Left i  -> return $ fromInteger i
+                                Right d -> return d          
+
 
 -- | parse for all acceptable conversion keywords
 conversion_keyword :: CharParser CalcState ()
@@ -83,17 +95,17 @@ conversion_keyword = reserved "c"
                   <?> "(c)onv keyword"
 
 
+-- | add the target unit of the conversion to the parser
+-- state so we can return it to the user
+add_unit :: String -> CharParser CalcState ()
+add_unit = updateState . insert_unit 
+
+
 -- | this function adds an error message to the queue of
 -- special (outside of parsing errors) to the error
 -- queue
 add_error_message :: String -> CharParser CalcState ()
-add_error_message message = 
-    getState 
-    >>= \state@(CalcState { errValue = val }) -> 
-        let newState = state { errState = True
-                             , errValue = message:val
-                             }
-        in setState newState
+add_error_message = updateState . insert_error
 
 
 -- | this parser parses an (optional) unit type signature following 

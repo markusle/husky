@@ -23,9 +23,12 @@
 -- in their separate modules
 module CalculatorState ( CalcState(..)
                        , have_special_error
+                       , have_unit
                        , defaultCalcState 
+                       , insert_error
+                       , insert_unit
                        , insert_variable
-                       , reset_error_queue
+                       , reset_state
                        ) where
 
 
@@ -37,14 +40,17 @@ import qualified Data.Map as M
 -- to the calculator (variables, etc ...)
 -- Currently, we thread the following pieces of information:
 -- varMap   : map with all currently defined variable/value pairs
+--            (persistent across calls to reset_state below)
 -- errState : bool indicating that any special error messages
 --            have been queued
 -- errValue : [String] holding all special error messages
+-- unit     : if we just parsed a unit conversion request
+--            this variable holds the target unit
 data CalcState = CalcState 
     { 
-      varMap   :: M.Map String Double 
-    , errState :: Bool
+      varMap   :: M.Map String Double   
     , errValue :: [String]
+    , unit     :: String
     }
 
 
@@ -52,9 +58,25 @@ defaultCalcState :: CalcState
 defaultCalcState = CalcState 
     { 
       varMap   = M.fromList constantList 
-    , errState = False
     , errValue = []
+    , unit     = ""
     }
+
+
+-- | function returning special error message if present
+have_special_error :: CalcState -> Maybe String
+have_special_error (CalcState { errValue = msg }) =
+    if (null msg)
+       then Nothing
+       else Just . unlines $ msg
+
+
+-- | function returning target conversion unit if present
+have_unit :: CalcState -> Maybe String
+have_unit (CalcState { unit = theUnit }) =
+    if (null theUnit)
+       then Nothing
+       else Just theUnit
 
 
 -- | function adding a new variable to the database
@@ -63,16 +85,22 @@ insert_variable num name state@(CalcState { varMap = theMap }) =
     state { varMap = M.insert name num theMap } 
 
 
--- | function returning special error message if present
-have_special_error :: CalcState -> Maybe String
-have_special_error (CalcState { errState = state, errValue = msg }) =
-    if state 
-       then Just . unlines $ msg
-       else Nothing
+-- | function inserting a new special error message into
+-- the error queue
+insert_error :: String -> CalcState -> CalcState
+insert_error error state@(CalcState { errValue = val }) = 
+        state { errValue = error:val }
+
+              
+-- | function adding a unit to the state; needed to return
+-- the proper unit of a converted value to the user
+insert_unit :: String -> CalcState -> CalcState
+insert_unit unit_value state = state { unit = unit_value }
+
 
 -- | function resetting the special error queue 
-reset_error_queue :: CalcState -> CalcState
-reset_error_queue state = state { errState = False, errValue = [] }
+reset_state :: CalcState -> CalcState
+reset_state state = state { errValue = [], unit = "" }
 
 
 -- | provide a few useful mathematical constants that we

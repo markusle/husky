@@ -37,7 +37,7 @@ import qualified Data.Map as M
 -- 2) If a user supplies a unit type specifier we directly look
 --    through the corresponding map for a conversion
 convert_unit :: String -> String -> Maybe String -> Double 
-             -> Either String Double 
+             -> Either String (Double,String) 
 convert_unit unit1 unit2 unitType value = 
     
   case unitType of
@@ -45,15 +45,18 @@ convert_unit unit1 unit2 unitType value =
     Nothing -> case unit_lookup (make_key unit1 unit2) allConv of
                  []        -> Left unit_conv_error 
                  a@(x:xs)  -> case length a of
-                                1 -> Right (converter x $ value)
+                                1 -> Right ( (converter x $ value)
+                                           , unit2 )
                                 _ -> Left too_many_matches
       
     -- the user supplied a unit type: grab the proper map and look
     Just u -> case M.lookup u allConv of
                 Nothing -> Left $ no_unit_error u
                 Just a  -> case M.lookup (make_key unit1 unit2) a of
-                             Nothing -> Left unit_conv_error
-                             Just x  -> Right (converter x $ value)
+                             Nothing -> Left $ "In " ++ u ++ " :: "
+                                                ++ unit_conv_error
+                             Just x  -> Right ( (converter x $ value)
+                                              , unit2 )
                    
   where
     -- unit conversion errors
@@ -68,11 +71,8 @@ convert_unit unit1 unit2 unitType value =
 
     -- function generating the lookup key into the unit maps
     -- based on two given unit strings
-    -- NOTE: for now we convert all units into all caps
     make_key :: String -> String -> String
-    make_key unit1 unit2 = (caps unit1) ++ (caps unit2)
-      where
-        caps = map toUpper
+    make_key unit1 unit2 = unit1 ++ unit2
     
 
 
@@ -103,14 +103,16 @@ type UnitMap = M.Map String UnitConverter
 -- | allConv holds a map of all available unit conversions
 -- indexed by the unit type such as Temp, Length, ....
 allConv :: M.Map String UnitMap
-allConv = M.fromList [ ("Temp", tempConv) ]
+allConv = M.fromList [ ("Temp", tempConv)
+                     , ("Length", lengthConv)
+                     ]
 
 
 -- | temperature conversions
 -- Most of them come from the NIST as published at
 -- http://physics.nist.gov/Pubs/SP811/appenB9.html#TEMPERATURE
 
--- | data structure holding temparature conversion units
+-- | data structure holding temparature conversions 
 tempConv :: UnitMap
 tempConv = M.fromList [ ("FC", fc_conv_temp) 
                       , ("CF", cf_conv_temp)
@@ -140,6 +142,7 @@ ck_conv_temp = UnitConverter
                , description = "Celsius to Kelvin"
                }
 
+
 -- | convert Kelvin to Celcius
 kc_conv_temp = UnitConverter 
                { converter   = \x -> x - 273.15
@@ -158,3 +161,126 @@ fk_conv_temp = UnitConverter
                { converter   = \x -> (9/5)*x - 459.67
                , description = "Fahrenheit to Kelvin"
                }
+
+
+-- | length conversions
+-- Most of them come from the NIST as published at
+-- http://physics.nist.gov/Pubs/SP811/appenB9.html#LENGTH
+
+-- | data structure holding length conversion 
+lengthConv :: UnitMap
+lengthConv = M.fromList [ ("mft", mf_conv_length) 
+                        , ("ftm", fm_conv_length)
+                        , ("min", mi_conv_length)
+                        , ("inm", im_conv_length)
+                        , ("mmi", mmi_conv_length)
+                        , ("mim", mim_conv_length)
+                        , ("kmmi", kmmi_conv_length)
+                        , ("mikm", mikm_conv_length)
+                        , ("myd", my_conv_length)
+                        , ("ydm", ym_conv_length)
+                        , ("mnmi", mnmi_conv_length)
+                        , ("nmim", nmim_conv_length)
+                        , ("kmnmi", kmnmi_conv_length)
+                        , ("nmikm", nmikm_conv_length)
+                      ]
+
+
+-- | convert meter to foot
+mf_conv_length = UnitConverter 
+                 { converter   = ((1/0.3048)*)
+                 , description = "meter to foot"
+                 }
+
+
+-- | convert foot to meter
+fm_conv_length = UnitConverter 
+                 { converter   = (0.3048*)
+                 , description = "foot to meter"
+                 }
+
+
+
+-- | convert meter to inch
+mi_conv_length = UnitConverter 
+                 { converter   = ((1/0.0254)*)
+                 , description = "meter to inch"
+                 }
+
+
+-- | convert inch to meter
+im_conv_length = UnitConverter 
+                 { converter   = (0.0254*)
+                 , description = "inch to meter"
+                 }
+
+
+-- | convert meter to mile
+mmi_conv_length = UnitConverter 
+                 { converter   = ((1/1.609344e3)*)
+                 , description = "meter to mile"
+                 }
+
+
+-- | convert mile to meter
+mim_conv_length = UnitConverter 
+                  { converter   = (1.609344e3*)
+                 , description = "mile to meter"
+                 }
+
+
+-- | convert kilometer to mile
+kmmi_conv_length = UnitConverter 
+                 { converter   = ((1/1.609344)*)
+                 , description = "kilometer to mile"
+                 }
+
+
+-- | convert mile to kilometer
+mikm_conv_length = UnitConverter 
+                  { converter   = (1.609344*)
+                 , description = "mile to kilometer"
+                 }
+
+
+-- | convert meter to yard
+my_conv_length = UnitConverter 
+                 { converter   = ((1/0.9144)*)
+                 , description = "meter to yard"
+                 }
+
+
+-- | convert yard to meter
+ym_conv_length = UnitConverter 
+                  { converter   = (0.9144*)
+                 , description = "yard to meter"
+                 }
+
+
+-- | convert meter to nautical mile
+mnmi_conv_length = UnitConverter 
+                 { converter   = ((1/1.852e3)*)
+                 , description = "meter to nautical mile"
+                 }
+
+
+-- | convert nautical mile to meter
+nmim_conv_length = UnitConverter 
+                  { converter   = (1.852e3*)
+                 , description = "nautical mile to meter"
+                 }
+
+
+-- | convert kilometer to nautical mile
+kmnmi_conv_length = UnitConverter 
+                 { converter   = ((1/1.852)*)
+                 , description = "kilometer to nautical mile"
+                 }
+
+
+-- | convert nautical mile to kilometer
+nmikm_conv_length = UnitConverter 
+                 { converter   = (1.852*)
+                 , description = "nautical mile to kilometer"
+                 }
+
