@@ -19,7 +19,7 @@
 --------------------------------------------------------------------}
 
 -- | main archy driver
-module CalculatorParser ( calculator ) where
+module CalculatorParser ( calculator_parser ) where
 
 
 -- imports
@@ -30,93 +30,14 @@ import Control.Monad
 import CalculatorState
 import ExtraFunctions
 import TokenParser
-import UnitConverter
 
 
--- | main parser entry point
-calculator :: CharParser CalcState (Double, CalcState)
-calculator = parse_calc 
-             >>= \val -> getState
-             >>= \state -> return (val, state)
-
-
--- | grammar description for parser
--- NOTE: We have to make sure to provide a default
---       catch all parsing rule in case the user
---       enters something we don't understand. Otherwise
---       parsing fails and we loose our state.
-parse_calc :: CharParser CalcState Double
-parse_calc =  try unit_conversion 
-          <|> try define_variable 
+-- | grammar description for calculator parser
+calculator_parser :: CharParser CalcState Double
+calculator_parser = try define_variable 
           <|> (add_term >>= \x -> end_of_line >> return x)
           <?> "math expression, variable definition, " ++
-              "variable name, or unit conversion"
-
-
--- | the user can request a conversion between to compatible
--- unit-full values (temperatures, lengths, ...).
--- The command spec is 
---     conv <value in unit1> <unit1> <unit2> [ :: <unit type> ] 
--- and returns <value in unit2>
-unit_conversion :: CharParser CalcState Double
-unit_conversion = (whiteSpace
-                  >> conversion_keyword
-                  >> whiteSpace
-                  >> parse_unit_value
-                  >>= \value -> whiteSpace
-                  >> unit_value
-                  >>= \unit1 -> whiteSpace
-                  >> unit_value
-                  >>= \unit2 -> whiteSpace
-                  >> optionMaybe parse_unit_type 
-                  >>= \unitType ->
-                    case convert_unit unit1 unit2 unitType value of
-                      Left err            -> add_error_message err  
-                                             >> return 0
-                      Right (conv, unit)  -> add_unit unit 
-                                             >> return conv )
-               <?> "unit conversion"
- 
-
--- | parse a unit value
--- We can't use parse_number since we'd like to explictly allow
--- things like 1m or 2yd which parse_number rejects
-parse_unit_value :: CharParser CalcState Double
-parse_unit_value = naturalOrFloat 
-                   >>= \num -> case num of 
-                                Left i  -> return $ fromInteger i
-                                Right d -> return d          
-
-
--- | parse for all acceptable conversion keywords
-conversion_keyword :: CharParser CalcState ()
-conversion_keyword = reserved "c" 
-                  <|> reserved "convert"
-                  <?> "(c)onv keyword"
-
-
--- | add the target unit of the conversion to the parser
--- state so we can return it to the user
-add_unit :: String -> CharParser CalcState ()
-add_unit = updateState . insert_unit 
-
-
--- | this function adds an error message to the queue of
--- special (outside of parsing errors) to the error
--- queue
-add_error_message :: String -> CharParser CalcState ()
-add_error_message = updateState . insert_error
-
-
--- | this parser parses an (optional) unit type signature following 
--- a unit conversion statement. It should be of the form 
--- (a la Haskell ;) ) " :: unit_type "
-parse_unit_type :: CharParser CalcState String
-parse_unit_type = (whiteSpace
-                  >> string "::"
-                  >> whiteSpace
-                  >> unit_type )
-               <?> "unit_type"
+              "variable name"
 
 
 -- | if the line starts off with a string we either

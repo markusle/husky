@@ -27,8 +27,9 @@ module Main where
 import System.Console.Readline
 
 -- local imports
-import CalculatorParser
+import Parser
 import CalculatorState
+import HelpParser
 import InfoRoutines
 import Messages
 import PrettyPrint
@@ -59,24 +60,33 @@ parse_it state = do
 
       addHistory line
 
-      -- parse it
-      case runParser calculator state "" line of
+      -- parse it as a potential help request
+      -- if it succeeds we parse the next command line, otherwise
+      -- we channel it into the calculator parser
+      case parse help "" line of
+        Right helpMsg  -> putStrLn helpMsg 
+                          >> parse_it state   
+        Left _         ->
 
-        Left er  -> (putStrLn $ "Error: " ++ show er)
+          -- parse it as a calculation or unit conversion
+          case runParser main_parser state "" line of
+
+            Left er  -> (putStrLn $ "Error: " ++ show er)
                     >> parse_it state
 
-        -- if the parser succeeds we still check for special
-        -- error conditions in our parse state that may have
-        -- been triggered by errors outside the parser (e.g.,
-        -- unit conversion may have failed for lack of proper
-        -- conversion function etc.)
-        Right (result, newState) -> 
-          case have_special_error newState of
-             Just err -> (putStr $ "Error: " ++ err)
-             Nothing  -> case have_unit newState of
-                           Nothing -> husky_result [show result]
-                           Just u  -> husky_result $ (show result):[u]
-
-          >> let cleanState = reset_state newState in
-             parse_it cleanState
+            -- if the parser succeeds we still check for special
+            -- error conditions in our parse state that may have
+            -- been triggered by errors outside the parser (e.g.,
+            -- unit conversion may have failed for lack of proper
+            -- conversion function etc.)
+            Right (result, newState) -> 
+              case have_special_error newState of
+                Just err -> (putStr $ "Error: " ++ err)
+                Nothing  -> case have_unit newState of
+                              Nothing -> husky_result [show result]
+                              Just u  -> 
+                                  husky_result $ (show result):[u]
+ 
+              >> let cleanState = reset_state newState in
+                 parse_it cleanState
 

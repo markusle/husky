@@ -28,7 +28,7 @@ import System.Exit
 
 
 -- local imports
-import CalculatorParser
+import Parser
 import CalculatorState
 import ExtraFunctions
 import PrettyPrint
@@ -101,7 +101,7 @@ good_test_driver state (x:xs) = do
 
   let tok      = fst x
   let expected = snd x
-  case runParser calculator state "" tok of
+  case runParser main_parser state "" tok of
     Left er -> tell [TestResult False tok (show expected) (show er)]
     Right (result, newState) -> examine_result expected result tok
         
@@ -132,7 +132,7 @@ failing_test_driver :: CalcState -> [FailingTestCase]
 failing_test_driver _ []         = return ()
 failing_test_driver state (x:xs) = do
 
-  case runParser calculator state "" x of
+  case runParser main_parser state "" x of
     Left er  -> tell [TestResult True x "Failure" "Failure"]
                 >> failing_test_driver state xs
     Right _  -> tell [TestResult False x "Failure" "Success"]
