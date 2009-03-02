@@ -23,10 +23,8 @@
 -- in their separate modules
 module CalculatorState ( CalcState(..)
                        , have_special_error
-                       , have_unit
                        , defaultCalcState 
                        , insert_error
-                       , insert_unit
                        , insert_variable
                        , reset_state
                        ) where
@@ -44,13 +42,10 @@ import qualified Data.Map as M
 -- errState : bool indicating that any special error messages
 --            have been queued
 -- errValue : [String] holding all special error messages
--- unit     : if we just parsed a unit conversion request
---            this variable holds the target unit
 data CalcState = CalcState 
     { 
       varMap   :: M.Map String Double   
     , errValue :: [String]
-    , unit     :: String
     }
 
 
@@ -59,7 +54,6 @@ defaultCalcState = CalcState
     { 
       varMap   = M.fromList constantList 
     , errValue = []
-    , unit     = ""
     }
 
 
@@ -69,14 +63,6 @@ have_special_error (CalcState { errValue = msg }) =
     if (null msg)
        then Nothing
        else Just . unlines $ msg
-
-
--- | function returning target conversion unit if present
-have_unit :: CalcState -> Maybe String
-have_unit (CalcState { unit = theUnit }) =
-    if (null theUnit)
-       then Nothing
-       else Just theUnit
 
 
 -- | function adding a new variable to the database
@@ -92,15 +78,9 @@ insert_error error state@(CalcState { errValue = val }) =
         state { errValue = error:val }
 
               
--- | function adding a unit to the state; needed to return
--- the proper unit of a converted value to the user
-insert_unit :: String -> CalcState -> CalcState
-insert_unit unit_value state = state { unit = unit_value }
-
-
 -- | function resetting the special error queue 
 reset_state :: CalcState -> CalcState
-reset_state state = state { errValue = [], unit = "" }
+reset_state state = state { errValue = [] }
 
 
 -- | provide a few useful mathematical constants that we

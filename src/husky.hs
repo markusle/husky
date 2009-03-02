@@ -23,7 +23,6 @@ module Main where
 
 
 -- imports
---import Data.Map
 import System.Console.Readline
 
 -- local imports
@@ -79,14 +78,11 @@ parse_it state = do
             -- been triggered by errors outside the parser (e.g.,
             -- unit conversion may have failed for lack of proper
             -- conversion function etc.)
-            Right (result, newState) -> 
+            Right ((result,unit), newState) -> 
               case have_special_error newState of
                 Just err -> (putStr $ "Error: " ++ err)
-                Nothing  -> case have_unit newState of
-                              Nothing -> husky_result [show result]
-                              Just u  -> 
-                                  husky_result $ (show result):[u]
- 
+                Nothing  -> husky_result $ (show result):[unit]
+
               >> let cleanState = reset_state newState in
                  parse_it cleanState
 

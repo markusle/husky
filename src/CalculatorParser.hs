@@ -33,9 +33,9 @@ import TokenParser
 
 
 -- | grammar description for calculator parser
-calculator_parser :: CharParser CalcState Double
-calculator_parser = try define_variable 
-          <|> (add_term >>= \x -> end_of_line >> return x)
+calculator_parser :: CharParser CalcState (Double, String)
+calculator_parser = try ( define_variable >>= \x -> return (x,"") )
+          <|> (add_term >>= \x -> end_of_line >> return (x,"") )
           <?> "math expression, variable definition, " ++
               "variable name"
 

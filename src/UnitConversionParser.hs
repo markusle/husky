@@ -34,7 +34,7 @@ import UnitConverter
 -- The command spec is 
 --     conv <value in unit1> <unit1> <unit2> [ :: <unit type> ] 
 -- and returns <value in unit2>
-unit_conversion :: CharParser CalcState Double
+unit_conversion :: CharParser CalcState (Double,String)
 unit_conversion = (whiteSpace
                   >> conversion_keyword
                   >> whiteSpace
@@ -47,10 +47,9 @@ unit_conversion = (whiteSpace
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
-                      Left err            -> add_error_message err  
-                                             >> return 0
-                      Right (conv, unit)  -> add_unit unit 
-                                             >> return conv )
+                      Left err           -> add_error_message err 
+                                             >> return (0,"") 
+                      Right (conv, unit) -> return (conv,unit) )
                <?> "unit conversion"
  
 
@@ -69,12 +68,6 @@ conversion_keyword :: CharParser CalcState ()
 conversion_keyword = reserved "\\c" 
                   <|> reserved "\\convert"
                   <?> "(c)onv keyword"
-
-
--- | add the target unit of the conversion to the parser
--- state so we can return it to the user
-add_unit :: String -> CharParser CalcState ()
-add_unit = updateState . insert_unit 
 
 
 -- | this function adds an error message to the queue of
