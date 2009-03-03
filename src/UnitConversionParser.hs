@@ -19,7 +19,9 @@
 --------------------------------------------------------------------}
 
 -- | parser for unit conversions
-module UnitConversionParser ( unit_conversion ) where
+module UnitConversionParser ( unit_conversion 
+                            , parse_unit_type
+                            ) where
 
 
 -- local imports

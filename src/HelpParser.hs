@@ -25,16 +25,22 @@ module HelpParser ( help ) where
 -- imports
 
 -- local imports
+import CalculatorState
 import TokenParser
+import UnitConverter
+import UnitConversionParser
 
 
 -- | main help parser entry point
-help :: CharParser () String
+help :: CharParser CalcState String
 help = unit_info
     <?> "units"
 
 
 -- | retrieve unit conversion information
-unit_info :: CharParser () String
+unit_info :: CharParser CalcState String
 unit_info = reserved "\\units"
-            >> return "foobar"
+            >> optionMaybe parse_unit_type
+            >>= \unitType -> return $ retrieve_unit_string unitType
+
+

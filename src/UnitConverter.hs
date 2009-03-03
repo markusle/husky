@@ -20,12 +20,15 @@
 
 -- | this module provides the functionality needed to do unit
 -- conversions
-module UnitConverter ( convert_unit ) where
+module UnitConverter ( convert_unit 
+                     , retrieve_unit_string
+                     ) where
                       
 
 -- imports
 import Data.Char
 import qualified Data.Map as M
+import PrettyPrint
 
 
 -- | function in charge of the main unit conversion
@@ -48,7 +51,8 @@ convert_unit unit1 unit2 unitType value =
                                 1 -> Right ( (converter x $ value)
                                            , unit2 )
                                 _ -> Left too_many_matches
-      
+
+                                     
     -- the user supplied a unit type: grab the proper map and look
     Just u -> case M.lookup u allConv of
                 Nothing -> Left $ no_unit_error u
@@ -84,6 +88,24 @@ unit_lookup key = M.fold append_val []
      append_val entry acc = case M.lookup key entry of
                               Nothing -> acc
                               Just a  -> a:acc
+
+
+-- | given a possible unit type display all available conversions
+-- for that type. Otherwise, display them all
+retrieve_unit_string :: Maybe String -> String
+retrieve_unit_string unit = case unit of
+    Just u  -> case M.lookup u allConv of
+                 Nothing -> ""
+                 Just m  -> (color_string Yellow $ u ++ "::\n") 
+                         ++ (color_string Cyan $ stringify_unit m)
+
+    Nothing -> unlines . map stringify . M.toList $ allConv
+      where
+        stringify x = (color_string Yellow $ fst x ++ "::\n") 
+                   ++ (color_string Cyan $ stringify_unit . snd $ x)
+
+ where 
+   stringify_unit = unlines . map (description . snd) . M.toList
 
 
 -- | UnitConverter holds all information known about 

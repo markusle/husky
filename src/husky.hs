@@ -62,8 +62,8 @@ parse_it state = do
       -- parse it as a potential help request
       -- if it succeeds we parse the next command line, otherwise
       -- we channel it into the calculator parser
-      case parse help "" line of
-        Right helpMsg  -> putStrLn helpMsg 
+      case runParser help state "" line of
+        Right helpMsg  -> putStr helpMsg 
                           >> parse_it state   
         Left _         ->
 
