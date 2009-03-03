@@ -96,12 +96,12 @@ retrieve_unit_string :: Maybe String -> String
 retrieve_unit_string unit = case unit of
     Just u  -> case M.lookup u allConv of
                  Nothing -> ""
-                 Just m  -> (color_string Yellow $ u ++ "::\n") 
+                 Just m  -> (color_string Yellow $ " :: " ++ u ++ "\n")
                          ++ (color_string Cyan $ stringify_unit m)
 
     Nothing -> unlines . map stringify . M.toList $ allConv
       where
-        stringify x = (color_string Yellow $ fst x ++ "::\n") 
+        stringify x = (color_string Yellow $ " :: " ++ fst x ++ "\n") 
                    ++ (color_string Cyan $ stringify_unit . snd $ x)
 
  where 
