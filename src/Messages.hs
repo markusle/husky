@@ -33,7 +33,7 @@ import PrettyPrint
 
 -- current version
 version :: String
-version = "0.2"
+version = "0.3"
 
 
 -- | display output somewhat colorful

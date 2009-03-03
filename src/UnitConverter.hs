@@ -148,40 +148,40 @@ tempConv = M.fromList [ ("FC", fc_conv_temp)
 -- | convert Fahrenheit to Celcius
 fc_conv_temp = UnitConverter 
                { converter   = \x -> (5/9)*(x-32)
-               , description = "Fahrenheit to Celsius"
+               , description = "F -> C :: Fahrenheit to Celsius"
                }
 
 -- | convert Celcius to Fahrenheit
 cf_conv_temp = UnitConverter 
                { converter   = \x -> (9/5)*x + 32
-               , description = "Celsius to Fahrenheit"
+               , description = "C -> F :: Celsius to Fahrenheit"
                }
 
 
 -- | convert Celius to Kelvin 
 ck_conv_temp = UnitConverter 
                { converter   = \x -> x + 273.15
-               , description = "Celsius to Kelvin"
+               , description = "C -> K :: Celsius to Kelvin"
                }
 
 
 -- | convert Kelvin to Celcius
 kc_conv_temp = UnitConverter 
                { converter   = \x -> x - 273.15
-               , description = "Kelvin to Celcius"
+               , description = "K -> C :: Kelvin to Celcius"
                }
 
 
 -- | convert Fahrenheit to Kelvin
 kf_conv_temp = UnitConverter 
                { converter   = \x -> (5/9)*(x + 459.67)
-               , description = "Fahrenheit to Kelvin"
+               , description = "F -> K :: Fahrenheit to Kelvin"
                }
 
 -- | convert Kelvin to Fahrenheit
 fk_conv_temp = UnitConverter 
                { converter   = \x -> (9/5)*x - 459.67
-               , description = "Fahrenheit to Kelvin"
+               , description = "K -> F :: Kelvin to Fahrenheit"
                }
 
 
@@ -208,101 +208,104 @@ lengthConv = M.fromList [ ("mft", mf_conv_length)
                       ]
 
 
--- | convert meter to foot
+-- | convert meters to feet
 mf_conv_length = UnitConverter 
                  { converter   = ((1/0.3048)*)
-                 , description = "meter to foot"
+                 , description = "m -> ft   :: meters to feet"
                  }
 
 
--- | convert foot to meter
+-- | convert feet to meters
 fm_conv_length = UnitConverter 
                  { converter   = (0.3048*)
-                 , description = "foot to meter"
+                 , description = "ft -> m   :: feet to meters"
                  }
 
 
 
--- | convert meter to inch
+-- | convert meters to inches
 mi_conv_length = UnitConverter 
                  { converter   = ((1/0.0254)*)
-                 , description = "meter to inch"
+                 , description = "m -> in   :: meters to inches"
                  }
 
 
--- | convert inch to meter
+-- | convert inches to meters
 im_conv_length = UnitConverter 
                  { converter   = (0.0254*)
-                 , description = "inch to meter"
+                 , description = "in -> m   :: inches to meters"
                  }
 
 
--- | convert meter to mile
+-- | convert meters to miles
 mmi_conv_length = UnitConverter 
                  { converter   = ((1/1.609344e3)*)
-                 , description = "meter to mile"
+                 , description = "m -> mi   :: meters to miles"
                  }
 
 
--- | convert mile to meter
+-- | convert miles to meters
 mim_conv_length = UnitConverter 
                   { converter   = (1.609344e3*)
-                 , description = "mile to meter"
+                 , description = "mi -> m   :: miles to meters"
                  }
 
 
--- | convert kilometer to mile
+-- | convert kilometers to mileis
 kmmi_conv_length = UnitConverter 
                  { converter   = ((1/1.609344)*)
-                 , description = "kilometer to mile"
+                 , description = "km -> mi  :: kilometers to miles"
                  }
 
 
--- | convert mile to kilometer
+-- | convert miles to kilometers
 mikm_conv_length = UnitConverter 
-                  { converter   = (1.609344*)
-                 , description = "mile to kilometer"
+                 { converter   = (1.609344*)
+                 , description = "mi -> km  :: miles to kilometers"
                  }
 
 
--- | convert meter to yard
+-- | convert meters to yards
 my_conv_length = UnitConverter 
                  { converter   = ((1/0.9144)*)
-                 , description = "meter to yard"
+                 , description = "m -> yd   :: meters to yards"
                  }
 
 
--- | convert yard to meter
+-- | convert yards to meters
 ym_conv_length = UnitConverter 
-                  { converter   = (0.9144*)
-                 , description = "yard to meter"
+                 { converter   = (0.9144*)
+                 , description = "yd -> m   :: yards to meters"
                  }
 
 
--- | convert meter to nautical mile
+-- | convert meters to nautical miles
 mnmi_conv_length = UnitConverter 
                  { converter   = ((1/1.852e3)*)
-                 , description = "meter to nautical mile"
+                 , description = "m -> nmi  :: meters to nautical miles"
                  }
 
 
--- | convert nautical mile to meter
+-- | convert nautical miles to meters
 nmim_conv_length = UnitConverter 
-                  { converter   = (1.852e3*)
-                 , description = "nautical mile to meter"
+                 { converter   = (1.852e3*)
+                 , description = "nmi -> m  :: nautical miles"
+                                 ++ "to meters"
                  }
 
 
--- | convert kilometer to nautical mile
+-- | convert kilometers to nautical miles
 kmnmi_conv_length = UnitConverter 
                  { converter   = ((1/1.852)*)
-                 , description = "kilometer to nautical mile"
+                 , description = "km -> nmi :: kilometers "
+                                 ++ "to nautical miles"
                  }
 
 
--- | convert nautical mile to kilometer
+-- | convert nautical miles to kilometers
 nmikm_conv_length = UnitConverter 
                  { converter   = (1.852*)
-                 , description = "nautical mile to kilometer"
+                 , description = "nmi -> km :: nautical miles"
+                                 ++ "to kilometer"
                  }
 

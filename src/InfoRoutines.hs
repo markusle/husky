@@ -52,8 +52,8 @@ show_time = getCurrentTime
             >>= \zone -> 
                 let 
                     localTime  = utcToLocalTime zone utcTime 
-                    timeString = formatTime defaultTimeLocale "%c" 
-                                 localTime 
+                    timeString = formatTime defaultTimeLocale 
+                                 "%a %b %m %Y  <>  %T %Z " localTime 
                 in
                   putStrLn timeString
 
