@@ -59,10 +59,16 @@ unit_conversion = (whiteSpace
 -- We can't use parse_number since we'd like to explictly allow
 -- things like 1m or 2yd which parse_number rejects
 parse_unit_value :: CharParser CalcState Double
-parse_unit_value = naturalOrFloat 
-                   >>= \num -> case num of 
-                                Left i  -> return $ fromInteger i
-                                Right d -> return d          
+parse_unit_value = parse_sign 
+        >>= \sign -> naturalOrFloat 
+        >>= \num -> case num of 
+                      Left i  -> return $ sign * (fromInteger i)
+                      Right d -> return (sign * d)          
+k
+
+-- | parse the optional sign in front of a unit value
+parse_sign :: CharParser CalcState Double
+parse_sign = option 1.0 ( whiteSpace >> char '-' >> return (-1.0) )
 
 
 -- | parse for all acceptable conversion keywords
