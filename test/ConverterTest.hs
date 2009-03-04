@@ -18,7 +18,7 @@
 
 --------------------------------------------------------------------}
 
--- | handcoded test for checking out the calculator parser
+-- | handcoded test for checking out the conversion function parser
 module Main where
 
 
@@ -40,25 +40,15 @@ import TokenParser
 -- and then examine the results afterward
 main :: IO ()
 main = do
-  putStrLn "\n\n\nTesting calculator Parser ..."
+  putStrLn "\n\n\nTesting conversion function parser ..."
 
   putStr $ color_string Cyan "\nSimple tests:\n"
   let simple = execWriter $ good_test_driver defaultCalcState 
                simpleTests
   status1 <- examine_output simple
 
-  putStr $ color_string Cyan "\nVariable tests:\n"
-  let vars = execWriter $ good_test_driver defaultCalcState 
-             variableTests
-  status2 <- examine_output vars
 
-  putStr $ color_string Cyan "\nFailure tests:\n"
-  let failing = execWriter $ failing_test_driver defaultCalcState 
-                failingTests
-  status2 <- examine_output failing
-
-
-  let status = status1 && status2 
+  let status = status1 
   if status == True then
       exitWith ExitSuccess
     else
@@ -105,27 +95,30 @@ good_test_driver state (x:xs) = do
   let expected = snd x
   case runParser main_parser state "" tok of
     Left er -> tell [TestResult False tok (show expected) (show er)]
-    Right ((result,_), newState) -> examine_result expected result tok
+    Right (result, newState) -> examine_result expected result tok
         
       where
         -- NOTE: when we compare target and actual result we
         -- probably need to be more careful and can't use ==
         -- if we are dealing with Doubles!!!
-        examine_result :: Double -> Double -> String 
-                       -> Writer [TestResult] ()
-        examine_result target actual tok = 
-          if (is_equal target actual) 
+        examine_result :: (Double,String) -> (Double,String) 
+                       -> String -> Writer [TestResult] ()
+        examine_result (t_value,t_unit) (a_value,a_unit) tok = 
+          if ((is_equal t_value a_value) && (t_unit == a_unit)) 
             then do
-              tell [TestResult True tok (show target) (show actual)]
+              tell [TestResult True tok target_string actual_string]
               good_test_driver newState xs
             else do
-              tell [TestResult False tok (show target) (show actual)]
+              tell [TestResult False tok target_string actual_string]
               good_test_driver newState xs
 
             where
               -- we compare doubles x,y for equality by means
               -- of abs(x-y) <= dbl_epsilon * abs(x)
               is_equal a b = abs(a-b) <= abs(a) * dbl_epsilon
+
+              actual_string = (show a_value) ++ " " ++ a_unit
+              target_string = (show t_value) ++ " " ++ t_unit
 
 
 -- | main test routine for "failing tests"
@@ -155,8 +148,8 @@ defaultResult = TestResult False "" "" ""
 
 
 -- | a good test case consists of an expression and an
--- expected result
-type GoodTestCase  = (String, Double)
+-- expected result (value,unit)
+type GoodTestCase  = (String, (Double,String))
 
 
 -- | a failing test case currently consists only of an
@@ -176,25 +169,20 @@ type FailingTestCase = String
 -- I.e., think twice when changing the order, or keep order
 -- dependend and independent sets in different lists 
 simpleTests :: [GoodTestCase]
-simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
+simpleTests = [ simpleTest1, simpleTest2] {-simpleTest3, simpleTest4
               , simpleTest5, simpleTest6, simpleTest7
               , simpleTest8, simpleTest9, simpleTest10, simpleTest11
-              , simpleTest12, simpleTest13, simpleTest14
-              , simpleTest15, simpleTest16, simpleTest17
-              , simpleTest18, simpleTest19, simpleTest20
-              , simpleTest21, simpleTest22, simpleTest23
-              , simpleTest24, simpleTest25, simpleTest26]
-
+              , simpleTest12, simpleTest13, simpleTest14]i-}
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
-simpleTest1 = ("3+4", 7.0)
+simpleTest1 = ("\\c 0F C", (-17.77777777777778,"C") )
 
 simpleTest2 :: GoodTestCase
-simpleTest2 = ("3*3", 9.0)
+simpleTest2 = ("\\c 0C F", (32,"F"))
 
-simpleTest3 :: GoodTestCase
-simpleTest3 = ("(3*3)+(3*4)", 21.0)
+{-simpleTest3 :: GoodTestCase
+simpleTest3 = ("\\c -12C K", 21.0)
 
 simpleTest4 :: GoodTestCase
 simpleTest4 = ("(3.0*3.0)+(3.0*4.0)", 21.0)
@@ -229,43 +217,9 @@ simpleTest13 = (" 3  + 3*8+4  *3 *2+1*  4*3+5  ", 68.0)
 simpleTest14 :: GoodTestCase
 simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)", 20736.0)
 
-simpleTest15 :: GoodTestCase
-simpleTest15 = ("3*-4", -12.0)
+-}
 
-simpleTest16 :: GoodTestCase
-simpleTest16 = ("3* -4", -12.0)
-
-simpleTest17 :: GoodTestCase
-simpleTest17 = ("-3*4", -12.0)
-
-simpleTest18 :: GoodTestCase
-simpleTest18 = ("-3*-4", 12.0)
-
-simpleTest19 :: GoodTestCase
-simpleTest19 = ("3*(-4)", -12.0)
-
-simpleTest20 :: GoodTestCase
-simpleTest20 = ("(-3)*(-4)", 12.0)
-
-simpleTest21 :: GoodTestCase
-simpleTest21 = ("3/-4", -0.75)
-
-simpleTest22 :: GoodTestCase
-simpleTest22 = ("3^-4", 1/81)
-
-simpleTest23 :: GoodTestCase
-simpleTest23 = ("-3*-4^-4", -3/256)
-
-simpleTest24 :: GoodTestCase
-simpleTest24 = ("-3+-4", -7)
-
-simpleTest25 :: GoodTestCase
-simpleTest25 = ("-1/-1/-1/-1", 1.0)
-
-simpleTest26 :: GoodTestCase
-simpleTest26 = ("-(-(-1))", -1)
-
-
+{-
 -- a few tests involving variables
 variableTests :: [GoodTestCase]
 variableTests = [ variableTest1, variableTest2, variableTest3
@@ -355,4 +309,4 @@ failingTest11 = ("(3+3)**(8+4)*3*(2+1)*4*(3+5)")
 
 failingTest12 :: FailingTestCase
 failingTest12 = ("b")
-
+-}

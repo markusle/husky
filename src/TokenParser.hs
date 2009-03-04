@@ -44,6 +44,7 @@ module TokenParser ( module Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec 
 import qualified Text.ParserCombinators.Parsec.Token as PT
 import Text.ParserCombinators.Parsec.Language (haskellDef
+                                              , opLetter
                                               , reservedOpNames
                                               , reservedNames )
 
@@ -111,6 +112,7 @@ operators = ["*","/","+","-","="]
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
          ( haskellDef { reservedOpNames = operators
+                      , opLetter = oneOf "*+/^"
                       , reservedNames   = keywords 
                                           ++ map fst builtinFunctions 
                       } )
@@ -149,7 +151,6 @@ naturalOrFloat = PT.naturalOrFloat lexer
 -- | token parser for keywords
 reservedOp :: String -> CharParser st ()
 reservedOp = PT.reservedOp lexer
-
 
 -- | token parser for keywords
 reserved :: String -> CharParser st ()

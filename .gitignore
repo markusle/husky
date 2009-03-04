@@ -2,5 +2,6 @@
 *.o
 husky
 CalculatorTest
+ConverterTest
 *.swp
 TAGS

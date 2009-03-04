@@ -8,7 +8,7 @@ docdir=$(DESTDIR)/usr/share/doc/husky-$(VERSION)
 htmldir=$(docdir)/html
 bindir=$(DESTDIR)/usr/bin
 
-GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates -fwarn-missing-fields -fwarn-missing-methods -fwarn-missing-signatures -fwarn-name-shadowing -fwarn-orphans -fwarn-overlapping-patterns -fwarn-simple-patterns -fwarn-tabs -fwarn-type-defaults -fwarn-monomorphism-restriction -fwarn-unused-binds -fwarn-unused-imports -fwarn-unused-matches -Wall
+GHC_FLAGS_DEVEL = -O -Wall -Werror -fwarn-simple-patterns -fwarn-tabs -fwarn-incomplete-record-updates -fwarn-monomorphism-restriction -fwarn-implicit-prelude 
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \
@@ -29,7 +29,10 @@ debug: $(OBJECTS)
 
 check: $(OBJECTS)
 	ghc -i./src --make test/CalculatorTest.hs
+	ghc -i./src --make test/ConverterTest.hs
 	./test/CalculatorTest
+	./test/ConverterTest
+
 
 install: husky
 	install -d $(docdir)

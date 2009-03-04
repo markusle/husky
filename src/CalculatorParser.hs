@@ -32,6 +32,8 @@ import ExtraFunctions
 import TokenParser
 
 
+import Debug.Trace
+
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState (Double, String)
 calculator_parser = try ( define_variable >>= \x -> return (x,"") )
@@ -114,11 +116,19 @@ exp_term = (whiteSpace >> factor) `chainl1` exp_action
 -- | parser for individual factors, i.e, numbers,
 -- variables or operations
 factor :: CharParser CalcState Double
-factor = parens add_term
+factor = try signed_parenthesis
       <|> parse_keywords
       <|> parse_number
       <|> parse_variable
       <?> "token or variable"         
+
+
+-- | parse a potentially signed expression enclosed in parenthesis.
+-- In the case of parenzised expressions we parse -() as (-1.0)*()
+signed_parenthesis :: CharParser CalcState Double
+signed_parenthesis = parse_sign
+                     >>= \sign -> parens add_term
+                     >>= \result -> return (sign * result)
 
 
 -- | parse all operations we currently know about
@@ -138,21 +148,29 @@ execute op = parens add_term >>= return . op
           
 multiply_action :: CharParser CalcState (Double -> Double -> Double)
 multiply_action = (reservedOp "*" >> return (*))
-                  <|> (reservedOp "/" >> return (/))
+               <|> (reservedOp "/" >> return (/))
+
 
 add_action :: CharParser CalcState (Double -> Double -> Double)
 add_action = (reservedOp "+" >> return (+))
-             <|> (reservedOp "-" >> return (-))
+          <|> (reservedOp "-" >> return (-))
+
 
 exp_action :: CharParser CalcState (Double -> Double -> Double)
 exp_action = reservedOp "^" >> return real_exp
 
+
 parse_number :: CharParser CalcState Double
-parse_number = naturalOrFloat 
+parse_number = parse_sign
+               >>= \sign -> naturalOrFloat 
                >>= \num -> notFollowedBy alphaNum
                >> case num of 
-                    Left i  -> return $ fromInteger i
-                    Right x -> return x
+                    Left i  -> return $ sign * (fromInteger i)
+                    Right x -> return (sign * x)
+
+
+parse_sign :: CharParser CalcState Double
+parse_sign = option 1.0 ( whiteSpace >> char '-' >> return (-1.0) )
 
 
 -- | function retrieving a variable from the database if
