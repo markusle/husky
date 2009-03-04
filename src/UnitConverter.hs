@@ -173,13 +173,13 @@ kc_conv_temp = UnitConverter
 
 
 -- | convert Fahrenheit to Kelvin
-kf_conv_temp = UnitConverter 
+fk_conv_temp = UnitConverter 
                { converter   = \x -> (5/9)*(x + 459.67)
                , description = "F -> K :: Fahrenheit to Kelvin"
                }
 
 -- | convert Kelvin to Fahrenheit
-fk_conv_temp = UnitConverter 
+kf_conv_temp = UnitConverter 
                { converter   = \x -> (9/5)*x - 459.67
                , description = "K -> F :: Kelvin to Fahrenheit"
                }

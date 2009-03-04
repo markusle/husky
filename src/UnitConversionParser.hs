@@ -64,7 +64,7 @@ parse_unit_value = parse_sign
         >>= \num -> case num of 
                       Left i  -> return $ sign * (fromInteger i)
                       Right d -> return (sign * d)          
-k
+
 
 -- | parse the optional sign in front of a unit value
 parse_sign :: CharParser CalcState Double

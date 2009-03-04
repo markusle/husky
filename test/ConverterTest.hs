@@ -43,12 +43,17 @@ main = do
   putStrLn "\n\n\nTesting conversion function parser ..."
 
   putStr $ color_string Cyan "\nSimple tests:\n"
-  let simple = execWriter $ good_test_driver defaultCalcState 
+  let simple1 = execWriter $ good_test_driver defaultCalcState 
                simpleTests
-  status1 <- examine_output simple
+  status1 <- examine_output simple1
+
+  putStr $ color_string Cyan "\nFailing tests:\n"
+  let simple2 = execWriter $ failing_test_driver defaultCalcState 
+               failingTests
+  status2 <- examine_output simple2
 
 
-  let status = status1 
+  let status = status1 && status2
   if status == True then
       exitWith ExitSuccess
     else
@@ -128,10 +133,14 @@ failing_test_driver _ []         = return ()
 failing_test_driver state (x:xs) = do
 
   case runParser main_parser state "" x of
-    Left er  -> tell [TestResult True x "Failure" "Failure"]
-                >> failing_test_driver state xs
-    Right _  -> tell [TestResult False x "Failure" "Success"]
-                  
+    Left er           -> tell [TestResult True x "Failure" "Failure"]
+                         >> failing_test_driver state xs
+    Right (_,status)  -> case have_special_error status of
+                           Just err -> tell [TestResult True x 
+                                             "Failure" "Failure"]
+                                       >> failing_test_driver state xs
+                           Nothing  -> tell [TestResult False x 
+                                             "Failure" "Success"]
  
 -- | our test results consist of a bool indicating success
 -- or failure, the test token as well as the expected and
@@ -169,8 +178,8 @@ type FailingTestCase = String
 -- I.e., think twice when changing the order, or keep order
 -- dependend and independent sets in different lists 
 simpleTests :: [GoodTestCase]
-simpleTests = [ simpleTest1, simpleTest2] {-simpleTest3, simpleTest4
-              , simpleTest5, simpleTest6, simpleTest7
+simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
+              , simpleTest5, simpleTest6]{-, simpleTest7
               , simpleTest8, simpleTest9, simpleTest10, simpleTest11
               , simpleTest12, simpleTest13, simpleTest14]i-}
 
@@ -181,18 +190,18 @@ simpleTest1 = ("\\c 0F C", (-17.77777777777778,"C") )
 simpleTest2 :: GoodTestCase
 simpleTest2 = ("\\c 0C F", (32,"F"))
 
-{-simpleTest3 :: GoodTestCase
-simpleTest3 = ("\\c -12C K", 21.0)
+simpleTest3 :: GoodTestCase
+simpleTest3 = ("\\c -12C K", (261.15,"K"))
 
 simpleTest4 :: GoodTestCase
-simpleTest4 = ("(3.0*3.0)+(3.0*4.0)", 21.0)
+simpleTest4 = ("\\c -12K C", (-285.15,"C"))
 
 simpleTest5 :: GoodTestCase
-simpleTest5 = ("(3+3)*(9+8)", 102.0)
+simpleTest5 = ("\\c 23F K", (268.15,"K"))
 
 simpleTest6 :: GoodTestCase
-simpleTest6 = ("(3.0+3.0)*(9.0+8.0)", 102.0)
-
+simpleTest6 = ("\\c 45K F", (-378.67,"F"))
+{-
 simpleTest7 :: GoodTestCase
 simpleTest7 = ("(((((((3.0+3.0)*(9.0+8.0)))))))", 102.0)
 
@@ -219,70 +228,24 @@ simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)", 20736.0)
 
 -}
 
-{-
--- a few tests involving variables
-variableTests :: [GoodTestCase]
-variableTests = [ variableTest1, variableTest2, variableTest3
-                , variableTest4, variableTest5, variableTest6
-                , variableTest7, variableTest8, variableTest9
-                , variableTest10, variableTest11, variableTest12 ] 
-
--- list of failing tests
-variableTest1 :: GoodTestCase
-variableTest1 = ("b = 4", 4)
-
-variableTest2 :: GoodTestCase
-variableTest2 = ("3 * b ", 12)
-
-variableTest3 :: GoodTestCase
-variableTest3 = ("(b*b)", 16)
-
-variableTest4 :: GoodTestCase
-variableTest4 = ("a = 12", 12)
-
-variableTest5 :: GoodTestCase
-variableTest5 = ("a * b", 48)
-
-variableTest6 :: GoodTestCase
-variableTest6 = ("a - b * b", (-4))
-
-variableTest7 :: GoodTestCase
-variableTest7 = ("3 * b - a", 0)
-
-variableTest8 :: GoodTestCase
-variableTest8 = ("kjhdskfsd123hjksdf = a * b", 48)
-
-variableTest9 :: GoodTestCase
-variableTest9 = ("(a*b) - kjhdskfsd123hjksdf", 0)
-
-variableTest10 :: GoodTestCase
-variableTest10 = ("c = 2", 2) 
-
-variableTest11 :: GoodTestCase
-variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", 168)
-
-variableTest12 :: GoodTestCase
-variableTest12 = ("b^a - c", 16777214)
-
-
 
 -- a few tests that are failing 
 failingTests :: [FailingTestCase]
-failingTests = [ failingTest1, failingTest2, failingTest3
-               , failingTest4, failingTest5, failingTest6
+failingTests = [ failingTest1, failingTest2, failingTest3]
+ {-              , failingTest4, failingTest5, failingTest6
                , failingTest7, failingTest8, failingTest9
-               , failingTest10, failingTest11, failingTest12 ]
+               , failingTest10, failingTest11, failingTest12 ]-}
 
 -- list of failing tests
 failingTest1 :: FailingTestCase
-failingTest1 = ("3+4b")
+failingTest1 = ("\\c 1F F")
 
 failingTest2 :: FailingTestCase
-failingTest2 = ("3*a3")
+failingTest2 = ("\\c 1C D")
 
 failingTest3 :: FailingTestCase
-failingTest3 = ("(3*3)B+(3*4)")
-
+failingTest3 = ("\\c C F")
+{-
 failingTest4 :: FailingTestCase
 failingTest4 = ("(3.0*3.0)+3.0*4.0)")
 
