@@ -50,6 +50,7 @@ parse_it state = do
   input <- readline $ color_string Red "husky> "
   case input of 
     Nothing   -> parse_it state
+    Just ""    -> parse_it state        -- continue without parsing
     Just "\\q" -> return ()             -- quit
     Just "\\v" -> list_variables state  -- list all defined variables
                   >> parse_it state
