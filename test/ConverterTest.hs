@@ -179,9 +179,11 @@ type FailingTestCase = String
 -- dependend and independent sets in different lists 
 simpleTests :: [GoodTestCase]
 simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
-              , simpleTest5, simpleTest6]{-, simpleTest7
-              , simpleTest8, simpleTest9, simpleTest10, simpleTest11
-              , simpleTest12, simpleTest13, simpleTest14]i-}
+              , simpleTest5, simpleTest6, simpleTest7, simpleTest8
+              , simpleTest9, simpleTest10, simpleTest11, simpleTest12
+              , simpleTest13, simpleTest14, simpleTest13, simpleTest14
+              , simpleTest15, simpleTest16, simpleTest17, simpleTest18
+              , simpleTest19, simpleTest20]
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
@@ -201,40 +203,56 @@ simpleTest5 = ("\\c 23F K", (268.15,"K"))
 
 simpleTest6 :: GoodTestCase
 simpleTest6 = ("\\c 45K F", (-378.67,"F"))
-{-
+ 
 simpleTest7 :: GoodTestCase
-simpleTest7 = ("(((((((3.0+3.0)*(9.0+8.0)))))))", 102.0)
+simpleTest7 = ("\\c 1ft m", (0.3048,"m"))
 
 simpleTest8 :: GoodTestCase
-simpleTest8 = ("(((((((3.0+3.0)))))*(((((9.0+8.0)))))))", 102.0)
+simpleTest8 = ("\\c 4m ft", (13.123359580052492,"ft"))
 
 simpleTest9 :: GoodTestCase
-simpleTest9 = ("3+3*99.0", 300.0)
+simpleTest9 = ("\\c 1km mi", (0.621371192237334,"mi"))
 
 simpleTest10 :: GoodTestCase
-simpleTest10 = ("3+3*8+4*3*2+1*4*3+5", 68.0)
+simpleTest10 = ("\\c 5km nmi", (2.6997840172786174, "nmi"))
 
 simpleTest11 :: GoodTestCase
-simpleTest11 = ("(3+3)*(8+4)*3*(2+1)*4*(3+5)", 20736.0)
+simpleTest11 = ("\\c 23.1m ft", (75.78740157480314, "ft"))
 
 simpleTest12 :: GoodTestCase
-simpleTest12 = (" 3  +3*     99.0", 300.0)
+simpleTest12 = ("\\c 0.45mi km", (0.7242048, "km"))
 
 simpleTest13 :: GoodTestCase
-simpleTest13 = (" 3  + 3*8+4  *3 *2+1*  4*3+5  ", 68.0)
+simpleTest13 = ("\\c 43.2mi m", (69523.66080000001, "m"))
 
 simpleTest14 :: GoodTestCase
-simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)", 20736.0)
+simpleTest14 = ("\\c 4.2m in", (165.35433070866142, "in"))
 
--}
+simpleTest15 :: GoodTestCase
+simpleTest15 = ("\\c 34.2m mi", (2.125089477451682e-2, "mi"))
+
+simpleTest16 :: GoodTestCase
+simpleTest16 = ("\\c 123.3m nmi", (6.657667386609072e-2, "nmi"))
+
+simpleTest17 :: GoodTestCase
+simpleTest17 = ("\\c 1.23m yd", (1.3451443569553807, "yd"))
+
+simpleTest18 :: GoodTestCase
+simpleTest18 = ("\\c 0.23nmi km", (0.42596, "km"))
+
+simpleTest19 :: GoodTestCase
+simpleTest19 = ("\\c 1.2nmi m", (2222.4, "m"))
+
+simpleTest20 :: GoodTestCase
+simpleTest20 = ("\\c 1.23yd m", (1.124712, "m"))
 
 
 -- a few tests that are failing 
 failingTests :: [FailingTestCase]
-failingTests = [ failingTest1, failingTest2, failingTest3]
- {-              , failingTest4, failingTest5, failingTest6
+failingTests = [ failingTest1, failingTest2, failingTest3
+               , failingTest4, failingTest5, failingTest6
                , failingTest7, failingTest8, failingTest9
-               , failingTest10, failingTest11, failingTest12 ]-}
+               , failingTest10, failingTest11, failingTest12 ]
 
 -- list of failing tests
 failingTest1 :: FailingTestCase
@@ -245,31 +263,31 @@ failingTest2 = ("\\c 1C D")
 
 failingTest3 :: FailingTestCase
 failingTest3 = ("\\c C F")
-{-
+
 failingTest4 :: FailingTestCase
-failingTest4 = ("(3.0*3.0)+3.0*4.0)")
+failingTest4 = ("\\c 1F mi")
 
 failingTest5 :: FailingTestCase
-failingTest5 = ("(3y3)*(9+8)")
+failingTest5 = ("\\c 1mi mi")
 
 failingTest6 :: FailingTestCase
-failingTest6 = ("(3.0+3.0)*(9.0+8.0")
+failingTest6 = ("\\c 1mi 1K")
 
 failingTest7 :: FailingTestCase
-failingTest7 = ("(((((((3.0+3.0)*(9.0+8.0))))))")
+failingTest7 = ("\\c 1nmi yd")
 
 failingTest8 :: FailingTestCase
-failingTest8 = ("(((((((3.0+3.0))))*((((((9.0+8.0)))))))")
+failingTest8 = ("\\c 1yd yd")
 
 failingTest9 :: FailingTestCase
-failingTest9 = ("a3+3*99.0")
+failingTest9 = ("\\c 1K K")
 
 failingTest10 :: FailingTestCase
-failingTest10 = ("3+3*8+4*3++2+1*4*3+5")
+failingTest10 = ("\\c 1F F")
 
 failingTest11 :: FailingTestCase
-failingTest11 = ("(3+3)**(8+4)*3*(2+1)*4*(3+5)")
+failingTest11 = ("c 1C yd")
 
 failingTest12 :: FailingTestCase
-failingTest12 = ("b")
--}
+failingTest12 = ("\\c c c 1")
+
