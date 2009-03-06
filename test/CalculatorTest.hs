@@ -122,11 +122,6 @@ good_test_driver state (x:xs) = do
               tell [TestResult False tok (show target) (show actual)]
               good_test_driver newState xs
 
-            where
-              -- we compare doubles x,y for equality by means
-              -- of abs(x-y) <= dbl_epsilon * abs(x)
-              is_equal a b = abs(a-b) <= abs(a) * dbl_epsilon
-
 
 -- | main test routine for "failing tests"
 failing_test_driver :: CalcState -> [FailingTestCase] 

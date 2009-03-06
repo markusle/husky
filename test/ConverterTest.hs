@@ -25,7 +25,9 @@ module Main where
 -- import
 import Control.Monad.Writer
 import System.Exit
+import Test.QuickCheck
 
+import Debug.Trace
 
 -- local imports
 import Parser
@@ -51,6 +53,10 @@ main = do
   let simple2 = execWriter $ failing_test_driver defaultCalcState 
                failingTests
   status2 <- examine_output simple2
+
+  -- run a bunch of tests to test if our conversion can be
+  -- be properly inverted
+  check_invertibility
 
 
   let status = status1 && status2
@@ -118,10 +124,6 @@ good_test_driver state (x:xs) = do
               good_test_driver newState xs
 
             where
-              -- we compare doubles x,y for equality by means
-              -- of abs(x-y) <= dbl_epsilon * abs(x)
-              is_equal a b = abs(a-b) <= abs(a) * dbl_epsilon
-
               actual_string = (show a_value) ++ " " ++ a_unit
               target_string = (show t_value) ++ " " ++ t_unit
 
@@ -291,3 +293,61 @@ failingTest11 = ("c 1C yd")
 failingTest12 :: FailingTestCase
 failingTest12 = ("\\c c c 1")
 
+
+-- | list of unit conversion pairs for inversion test
+unitPairs :: [(String,String)]
+unitPairs = [ unitPair1, unitPair2, unitPair3, unitPair4, unitPair5
+            , unitPair6, unitPair7]
+
+unitPair1 :: (String,String)
+unitPair1 = ("m","yd")
+
+unitPair2 :: (String,String)
+unitPair2 = ("m","in")
+
+unitPair3 :: (String,String)
+unitPair3 = ("m","mi")
+
+unitPair4 :: (String,String)
+unitPair4 = ("ft","m")
+
+unitPair5 :: (String,String)
+unitPair5 = ("km","mi")
+
+unitPair6 :: (String,String)
+unitPair6 = ("km","nmi")
+
+unitPair7 :: (String,String)
+unitPair7 = ("m","nmi")
+
+
+-- | function using quickcheck to test if our unit conversions
+-- are properly invertible, i.e. if we convert m to yd and then
+-- back we should end up with our initial result
+-- NOTE: It would be great if we could check the "return status"
+-- of quickcheck somehow so we can propage the result to the
+-- shell
+check_invertibility :: IO ()
+check_invertibility =
+    (putStr $ color_string Cyan "\n\nCheck Invertibility ..\n") 
+    >> mapM_ (\x -> quickCheck $ prop_invert (fst x) (snd x)) 
+       unitPairs
+
+
+-- | properties for Quickcheck
+-- in a nutshell if our conversion functions are invertible,
+-- e.g. \c (\c 5yd m)m yd == 5
+-- NOTE: We could use Double here instead of Integer but then
+-- we had to make dbl_epsilon slightly less strict 
+prop_invert :: String -> String -> Integer -> Bool
+prop_invert u1 u2 i =
+  case runParser main_parser defaultCalcState "" $ test_to i of
+    Left _  -> False
+    Right ((x,_),_) -> 
+      case runParser main_parser defaultCalcState "" $ test_from x of
+        Left _ -> False
+        Right ((y,_),_) -> is_equal (fromInteger i) y
+
+  where
+    test_to z   = "\\c " ++ (show z) ++ u1 ++ " " ++ u2
+    test_from z = "\\c " ++ (show z) ++ u2 ++ " " ++ u1

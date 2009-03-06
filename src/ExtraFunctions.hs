@@ -19,9 +19,9 @@
 
 --------------------------------------------------------------------}
 
--- | definition of a few additional function (from libc)
+-- | definition of a few additional helper function (e.g. from libc)
 module ExtraFunctions ( real_exp 
-                      , dbl_epsilon 
+                      , is_equal
                       ) where
 
 
@@ -33,6 +33,10 @@ import Foreign.C.Types
 -- | use glibc DBL_EPSILON
 dbl_epsilon :: Double
 dbl_epsilon = 2.2204460492503131e-16
+
+-- | comparison function for doubles via dbl_epsion
+is_equal :: Double -> Double -> Bool
+is_equal x y = abs(x-y) <= abs(x) * dbl_epsilon
 
 
 -- | helper function for defining real powers
