@@ -32,6 +32,7 @@ module CalculatorState ( CalcState(..)
 
 -- imports
 import qualified Data.Map as M
+import Prelude
 
 
 -- | this data structure provides some state information
@@ -74,8 +75,8 @@ insert_variable num name state@(CalcState { varMap = theMap }) =
 -- | function inserting a new special error message into
 -- the error queue
 insert_error :: String -> CalcState -> CalcState
-insert_error error state@(CalcState { errValue = val }) = 
-        state { errValue = error:val }
+insert_error err state@(CalcState { errValue = val }) = 
+        state { errValue = err:val }
 
               
 -- | function resetting the special error queue 

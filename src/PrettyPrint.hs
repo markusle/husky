@@ -26,6 +26,10 @@ module PrettyPrint ( Color(..)
                    ) where
 
 
+-- imports
+import Prelude
+
+
 -- define colors
 data Color = Black | Red | Green | Yellow | Blue | Magenta 
            | Cyan | White | Reset 

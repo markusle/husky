@@ -22,12 +22,10 @@
 module Parser ( main_parser ) where
 
 
--- imports
-import Control.Monad
-
 -- local imports
 import CalculatorParser
 import CalculatorState
+import Prelude
 import TokenParser
 import UnitConversionParser
 

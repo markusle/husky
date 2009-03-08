@@ -26,8 +26,9 @@ module UnitConverter ( convert_unit
                       
 
 -- imports
-import Data.Char
+import Data.Char()
 import qualified Data.Map as M
+import Prelude 
 import PrettyPrint
 
 
@@ -45,9 +46,9 @@ convert_unit unit1 unit2 unitType value =
     
   case unitType of
      -- no unit type specifier: look through all unit maps
-    Nothing -> case unit_lookup (make_key unit1 unit2) allConv of
+    Nothing -> case unit_lookup (unit1 ++ unit2) allConv of
                  []        -> Left unit_conv_error 
-                 a@(x:xs)  -> case length a of
+                 a@(x:_)  -> case length a of
                                 1 -> Right ( (converter x $ value)
                                            , unit2 )
                                 _ -> Left too_many_matches
@@ -56,7 +57,7 @@ convert_unit unit1 unit2 unitType value =
     -- the user supplied a unit type: grab the proper map and look
     Just u -> case M.lookup u allConv of
                 Nothing -> Left $ no_unit_error u
-                Just a  -> case M.lookup (make_key unit1 unit2) a of
+                Just a  -> case M.lookup (unit1 ++ unit2) a of
                              Nothing -> Left $ "In " ++ u ++ " :: "
                                                 ++ unit_conv_error
                              Just x  -> Right ( (converter x $ value)
@@ -72,12 +73,6 @@ convert_unit unit1 unit2 unitType value =
     too_many_matches = "More than one unit conversion matched.\n"
                        ++ "Consider disambiguating with an explicit "
                        ++ "unit type."
-
-    -- function generating the lookup key into the unit maps
-    -- based on two given unit strings
-    make_key :: String -> String -> String
-    make_key unit1 unit2 = unit1 ++ unit2
-    
 
 
 -- | helper function looking through all unit maps for a matching
@@ -146,12 +141,14 @@ tempConv = M.fromList [ ("FC", fc_conv_temp)
 
 
 -- | convert Fahrenheit to Celcius
+fc_conv_temp :: UnitConverter 
 fc_conv_temp = UnitConverter 
                { converter   = \x -> (5/9)*(x-32)
                , description = "F -> C :: Fahrenheit to Celsius"
                }
 
 -- | convert Celcius to Fahrenheit
+cf_conv_temp :: UnitConverter 
 cf_conv_temp = UnitConverter 
                { converter   = \x -> (9/5)*x + 32
                , description = "C -> F :: Celsius to Fahrenheit"
@@ -159,6 +156,7 @@ cf_conv_temp = UnitConverter
 
 
 -- | convert Celius to Kelvin 
+ck_conv_temp :: UnitConverter 
 ck_conv_temp = UnitConverter 
                { converter   = \x -> x + 273.15
                , description = "C -> K :: Celsius to Kelvin"
@@ -166,6 +164,7 @@ ck_conv_temp = UnitConverter
 
 
 -- | convert Kelvin to Celcius
+kc_conv_temp :: UnitConverter 
 kc_conv_temp = UnitConverter 
                { converter   = \x -> x - 273.15
                , description = "K -> C :: Kelvin to Celcius"
@@ -173,12 +172,14 @@ kc_conv_temp = UnitConverter
 
 
 -- | convert Fahrenheit to Kelvin
+fk_conv_temp :: UnitConverter 
 fk_conv_temp = UnitConverter 
                { converter   = \x -> (5/9)*(x + 459.67)
                , description = "F -> K :: Fahrenheit to Kelvin"
                }
 
 -- | convert Kelvin to Fahrenheit
+kf_conv_temp :: UnitConverter 
 kf_conv_temp = UnitConverter 
                { converter   = \x -> (9/5)*x - 459.67
                , description = "K -> F :: Kelvin to Fahrenheit"
@@ -209,6 +210,7 @@ lengthConv = M.fromList [ ("mft", mf_conv_length)
 
 
 -- | convert meters to feet
+mf_conv_length :: UnitConverter 
 mf_conv_length = UnitConverter 
                  { converter   = ((1/0.3048)*)
                  , description = "m -> ft   :: meters to feet"
@@ -216,6 +218,7 @@ mf_conv_length = UnitConverter
 
 
 -- | convert feet to meters
+fm_conv_length :: UnitConverter 
 fm_conv_length = UnitConverter 
                  { converter   = (0.3048*)
                  , description = "ft -> m   :: feet to meters"
@@ -224,6 +227,7 @@ fm_conv_length = UnitConverter
 
 
 -- | convert meters to inches
+mi_conv_length :: UnitConverter 
 mi_conv_length = UnitConverter 
                  { converter   = ((1/0.0254)*)
                  , description = "m -> in   :: meters to inches"
@@ -231,6 +235,7 @@ mi_conv_length = UnitConverter
 
 
 -- | convert inches to meters
+im_conv_length :: UnitConverter 
 im_conv_length = UnitConverter 
                  { converter   = (0.0254*)
                  , description = "in -> m   :: inches to meters"
@@ -238,6 +243,7 @@ im_conv_length = UnitConverter
 
 
 -- | convert meters to miles
+mmi_conv_length :: UnitConverter 
 mmi_conv_length = UnitConverter 
                  { converter   = ((1/1.609344e3)*)
                  , description = "m -> mi   :: meters to miles"
@@ -245,13 +251,15 @@ mmi_conv_length = UnitConverter
 
 
 -- | convert miles to meters
+mim_conv_length :: UnitConverter 
 mim_conv_length = UnitConverter 
                   { converter   = (1.609344e3*)
                  , description = "mi -> m   :: miles to meters"
                  }
 
 
--- | convert kilometers to mileis
+-- | convert kilometers to miles
+kmmi_conv_length :: UnitConverter 
 kmmi_conv_length = UnitConverter 
                  { converter   = ((1/1.609344)*)
                  , description = "km -> mi  :: kilometers to miles"
@@ -259,6 +267,7 @@ kmmi_conv_length = UnitConverter
 
 
 -- | convert miles to kilometers
+mikm_conv_length :: UnitConverter 
 mikm_conv_length = UnitConverter 
                  { converter   = (1.609344*)
                  , description = "mi -> km  :: miles to kilometers"
@@ -266,6 +275,7 @@ mikm_conv_length = UnitConverter
 
 
 -- | convert meters to yards
+my_conv_length :: UnitConverter 
 my_conv_length = UnitConverter 
                  { converter   = ((1/0.9144)*)
                  , description = "m -> yd   :: meters to yards"
@@ -273,6 +283,7 @@ my_conv_length = UnitConverter
 
 
 -- | convert yards to meters
+ym_conv_length :: UnitConverter 
 ym_conv_length = UnitConverter 
                  { converter   = (0.9144*)
                  , description = "yd -> m   :: yards to meters"
@@ -280,6 +291,7 @@ ym_conv_length = UnitConverter
 
 
 -- | convert meters to nautical miles
+mnmi_conv_length :: UnitConverter 
 mnmi_conv_length = UnitConverter 
                  { converter   = ((1/1.852e3)*)
                  , description = "m -> nmi  :: meters to nautical miles"
@@ -287,6 +299,7 @@ mnmi_conv_length = UnitConverter
 
 
 -- | convert nautical miles to meters
+nmim_conv_length :: UnitConverter 
 nmim_conv_length = UnitConverter 
                  { converter   = (1.852e3*)
                  , description = "nmi -> m  :: nautical miles"
@@ -295,6 +308,7 @@ nmim_conv_length = UnitConverter
 
 
 -- | convert kilometers to nautical miles
+kmnmi_conv_length :: UnitConverter 
 kmnmi_conv_length = UnitConverter 
                  { converter   = ((1/1.852)*)
                  , description = "km -> nmi :: kilometers "
@@ -303,6 +317,7 @@ kmnmi_conv_length = UnitConverter
 
 
 -- | convert nautical miles to kilometers
+nmikm_conv_length :: UnitConverter 
 nmikm_conv_length = UnitConverter 
                  { converter   = (1.852*)
                  , description = "nmi -> km :: nautical miles"

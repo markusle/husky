@@ -28,6 +28,7 @@ module ExtraFunctions ( real_exp
 -- imports
 import Foreign()
 import Foreign.C.Types
+import Prelude 
 
 
 -- | use glibc DBL_EPSILON

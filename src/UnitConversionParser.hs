@@ -26,6 +26,7 @@ module UnitConversionParser ( unit_conversion
 
 -- local imports
 import CalculatorState
+import Prelude
 import TokenParser
 import UnitConverter
 

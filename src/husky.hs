@@ -31,6 +31,7 @@ import CalculatorState
 import HelpParser
 import InfoRoutines
 import Messages
+import Prelude
 import PrettyPrint
 import TokenParser
 
@@ -71,8 +72,8 @@ parse_it state = do
           -- parse it as a calculation or unit conversion
           case runParser main_parser state "" line of
 
-            Left er  -> (putStrLn $ "Error: " ++ show er)
-                    >> parse_it state
+            Left er  -> print_error_message (show er) 
+                        >> parse_it state
 
             -- if the parser succeeds we still check for special
             -- error conditions in our parse state that may have

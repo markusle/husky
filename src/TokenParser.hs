@@ -47,6 +47,8 @@ import Text.ParserCombinators.Parsec.Language (haskellDef
                                               , opLetter
                                               , reservedOpNames
                                               , reservedNames )
+import Prelude
+
 
 -- local imports
 import CalculatorState
@@ -99,7 +101,7 @@ builtinFunctions = [ ("sqrt",sqrt)
 
 -- | all other keywords that are not regular functions
 keywords :: [String]
-keywords = ["\\convert","\\c","\\units"]
+keywords = ["\\convert","\\c"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]

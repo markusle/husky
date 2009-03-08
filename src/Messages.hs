@@ -20,12 +20,13 @@
 
 -- | Messages provides common messages
 module Messages ( husky_result
-                , parse_error
+                , print_error_message
                 , show_greeting
                 ) where
 
 -- imports
-import System.IO
+import System.IO()
+import Prelude 
 
 -- local imports
 import PrettyPrint
@@ -51,9 +52,7 @@ show_greeting = do
   putStrLn "-------------------------------------------------"
 
 
--- | message indicating that something went wrong
--- during parsing
-parse_error :: String -> IO ()
-parse_error message = do
-  putStr   $ color_string Yellow "Error: "
-  putStrLn $ color_string Green "Could not parse '" ++ message ++ "'"
+-- | helpful message after bad parse
+print_error_message :: String -> IO ()
+print_error_message er = putStrLn $ "Error: " ++ er 
+                         ++ "\nPlease type \\[h]elp for help."

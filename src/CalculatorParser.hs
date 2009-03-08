@@ -29,10 +29,9 @@ import Control.Monad
 -- local imports
 import CalculatorState
 import ExtraFunctions
+import Prelude
 import TokenParser
 
-
-import Debug.Trace
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState (Double, String)
