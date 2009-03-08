@@ -1,8 +1,8 @@
 Name:          husky
-Version:       0.2
+Version:       0.3
 License:       GPL
 license-file:  COPYING
-copyright:     (c) 2008 Markus Dittrich
+copyright:     (C) 2009 Markus Dittrich
 category:      console
 Synopsis:      A simple command line calculator.
 Description:   husky is a command line calculator with a small memory 
