@@ -1,3 +1,19 @@
+2008-03-08 Markus Dittrich <haskelladdict@gmail.com>
+
+	* 0.3 release
+	
+	* lots of bug fixes. In particular, operations
+	with unary "-" now work properly (such as 3*-3)
+	Added more unit tests and use quickcheck to test
+	some of the unit conversion properties.
+
+	* added unit conversion framework. Currently,
+	husky "knows about" the basic temperature and length 
+	conversions. More to follow.
+
+	* added basic help system
+
+
 2008-02-22 Markus Dittrich <haskelladdict@gmail.com>
 
 	* 0.2 release
