@@ -27,6 +27,7 @@ import Control.Monad
 
 -- local imports
 import CalculatorState
+import Messages
 import Prelude
 import PrettyPrint
 import TokenParser
@@ -70,11 +71,13 @@ unit_info = ( string "units"
 -- | return about info
 about_info :: CharParser CalcState String
 about_info = string "about"
-             >> return about_string
+             >> return infoString
           <?> "about info"
   where
-    about_string = "husky (v0.3) (C) 2009 Markus Dittrich\n"
-                   ++ "husky is licenced under the GPL V3\n"
+--    about_string = "husky (v" ++ version ++ ")\n" 
+--                   ++ "(C) 2009 Markus Dittrich\n"
+--                   ++ "husky is licenced under the GPL V3\n"
+--                   ++ "and comes WITHOUT ANY WARRANTY\n"
 
 
 -- | return all currently available help options

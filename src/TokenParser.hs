@@ -104,7 +104,7 @@ keywords :: [String]
 keywords = ["\\convert","\\c"]
 
 operators :: [String]
-operators = ["*","/","+","-","="]
+operators = ["*","/","+","-","=","++"]
 
 
 {- | prepare needed parsers from Parsec.Token -}

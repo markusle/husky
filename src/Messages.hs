@@ -20,6 +20,7 @@
 
 -- | Messages provides common messages
 module Messages ( husky_result
+                , infoString
                 , print_error_message
                 , show_greeting
                 ) where
@@ -32,9 +33,15 @@ import Prelude
 import PrettyPrint
 
 
--- current version
+-- | current version
 version :: String
-version = "0.3"
+version = "0.4"
+
+-- | info string
+infoString :: String
+infoString = "Welcome to husky (v" ++ version ++ ")\n" 
+          ++ "(C) 2009 Markus Dittrich, licensed under the GPL-3\n"
+          ++ "husky comes WITHOUT ANY WARRANTY\n"
 
 
 -- | display output somewhat colorful
@@ -46,11 +53,9 @@ husky_result items = do
 
 -- | greeting                                                         
 show_greeting :: IO ()                                                
-show_greeting = do                                                    
-  putStrLn $ "Welcome to husky (v" ++ version 
-             ++ ")  (C) 2009 Markus Dittrich"
-  putStrLn "-------------------------------------------------"
-
+show_greeting = putStrLn $ banner ++ "\n" ++ infoString ++ banner
+  where
+    banner = replicate 60 '*'
 
 -- | helpful message after bad parse
 print_error_message :: String -> IO ()
