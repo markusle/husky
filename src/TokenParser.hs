@@ -32,6 +32,7 @@ module TokenParser ( module Text.ParserCombinators.Parsec
                    , operators
                    , reservedOp
                    , reserved
+                   , semi
                    , stringLiteral
                    , unit_value
                    , unit_type
@@ -51,6 +52,7 @@ import Prelude
 
 
 -- local imports
+
 import CalculatorState
 
 
@@ -104,7 +106,7 @@ keywords :: [String]
 keywords = ["\\convert","\\c"]
 
 operators :: [String]
-operators = ["*","/","+","-","=","++"]
+operators = ["*","/","+","-","="]
 
 
 {- | prepare needed parsers from Parsec.Token -}
@@ -161,3 +163,7 @@ reserved = PT.reserved lexer
 -- | token parser for whitespace
 whiteSpace :: CharParser st ()
 whiteSpace = PT.whiteSpace lexer
+
+-- | token parser for semicolon
+semi :: CharParser st String
+semi = PT.semi lexer

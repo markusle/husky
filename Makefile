@@ -1,14 +1,14 @@
 # Copyright 2008 Markus Dittrich <markusle@gmail.com>
 # Distributed under the terms of the GNU General Public License v3
 
-VERSION=0.3
+VERSION=0.4
 DESTDIR=
 mandir=$(DESTDIR)/usr/share/man/man1
 docdir=$(DESTDIR)/usr/share/doc/husky-$(VERSION)
 htmldir=$(docdir)/html
 bindir=$(DESTDIR)/usr/bin
 
-GHC_FLAGS_DEVEL = -O -Wall -Werror -fwarn-simple-patterns -fwarn-tabs -fwarn-incomplete-record-updates -fwarn-monomorphism-restriction -fwarn-implicit-prelude 
+GHC_FLAGS_DEVEL = -O -Wall -fwarn-simple-patterns -fwarn-tabs -fwarn-incomplete-record-updates -fwarn-monomorphism-restriction -fwarn-implicit-prelude -Werror
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \

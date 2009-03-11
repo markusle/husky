@@ -35,10 +35,10 @@ import TokenParser
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState (Double, String)
-calculator_parser = try ( define_variable >>= \x -> return (x,"") )
-          <|> (add_term >>= \x -> end_of_line >> return (x,"") )
-          <?> "math expression, variable definition, " ++
-              "variable name"
+calculator_parser = parse_statements 
+                    >>= \x -> end_of_line >> return (x,"")
+                 <?> "math expression, variable definition, " 
+                     ++ "variable name"
 
 
 -- | if the line starts off with a string we either
@@ -82,20 +82,26 @@ variable_def_by_value varName = ( add_term
 -- | define a variable via the value of another variable
 variable_def_by_var :: String -> CharParser CalcState Double
 variable_def_by_var varName = parse_variable 
-            >>= \value -> updateState (insert_variable value varName)
-            >> return value
+            >>= \val -> updateState (insert_variable val varName)
+            >> return val
+
+
+-- | parse individual statements separated by semicolon
+-- NOTE: 'sepBy1' as opposed to 'sepBy' is crucial here to
+-- guarantee the list is not empty; otherwise head will die
+-- on us.
+parse_statements :: CharParser CalcState Double
+parse_statements = individual_statement `sepBy1` semi
+                   >>= return . head . reverse 
+                <?> "statement"
              
 
--- | look for the value of a given variable if any
-parse_variable :: CharParser CalcState Double
-parse_variable = ( variable 
-                  >>= \val -> whiteSpace
-                  >> get_variable_value val
-                  >>= \result -> case result of
-                        Just a  -> return a 
-                        Nothing -> pzero )
-              <?> "variable"
-                  
+-- | parse an individual statement, i.e. either a computation
+-- or a variable definition
+individual_statement :: CharParser CalcState Double
+individual_statement = try define_variable <|> add_term 
+                    <?> "expression or variable definition"
+
 
 -- | parser for expressions chained via "+" or "-"
 add_term :: CharParser CalcState Double
@@ -170,6 +176,18 @@ parse_number = parse_sign
 
 parse_sign :: CharParser CalcState Double
 parse_sign = option 1.0 ( whiteSpace >> char '-' >> return (-1.0) )
+
+
+-- | look for the value of a given variable if any
+parse_variable :: CharParser CalcState Double
+parse_variable = ( variable 
+                   >>= \val -> whiteSpace
+                   >> get_variable_value val
+                   >>= \result -> 
+                     case result of
+                       Nothing -> pzero 
+                       Just a  -> return a )
+              <?> "variable"
 
 
 -- | function retrieving a variable from the database if

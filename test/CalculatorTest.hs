@@ -55,10 +55,10 @@ main = do
   putStr $ color_string Cyan "\nFailure tests:\n"
   let failing = execWriter $ failing_test_driver defaultCalcState 
                 failingTests
-  status2 <- examine_output failing
+  status3 <- examine_output failing
 
 
-  let status = status1 && status2 
+  let status = status1 && status2 && status3
   if status == True then
       exitWith ExitSuccess
     else
@@ -178,8 +178,9 @@ simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
               , simpleTest15, simpleTest16, simpleTest17
               , simpleTest18, simpleTest19, simpleTest20
               , simpleTest21, simpleTest22, simpleTest23
-              , simpleTest24, simpleTest25, simpleTest26]
-
+              , simpleTest24, simpleTest25, simpleTest26
+              , simpleTest27, simpleTest28, simpleTest29
+              , simpleTest30, simpleTest31, simpleTest32]
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
@@ -260,15 +261,35 @@ simpleTest25 = ("-1/-1/-1/-1", 1.0)
 simpleTest26 :: GoodTestCase
 simpleTest26 = ("-(-(-1))", -1)
 
+simpleTest27 :: GoodTestCase
+simpleTest27 = ("3/-4; -1/-1/-1/-1; -3*-4^-4", -3/256)
+
+simpleTest28 :: GoodTestCase
+simpleTest28 = ("3*3; 4+5; 34 * 34   ; 3^-4", 1/81)
+
+simpleTest29 :: GoodTestCase
+simpleTest29 = ("3*3;4*4;-3*-4^-4", -3/256)
+
+simpleTest30 :: GoodTestCase
+simpleTest30 = ("  3; 3+4; 4*2   ; -3+-4", -7)
+
+simpleTest31 :: GoodTestCase
+simpleTest31 = ("3*1;3;3;3;3  ;-1/-1/-1/-1", 1.0)
+
+simpleTest32 :: GoodTestCase
+simpleTest32 = ("4^4;-(-(-1))", -1)
+
 
 -- a few tests involving variables
 variableTests :: [GoodTestCase]
 variableTests = [ variableTest1, variableTest2, variableTest3
                 , variableTest4, variableTest5, variableTest6
                 , variableTest7, variableTest8, variableTest9
-                , variableTest10, variableTest11, variableTest12 ] 
+                , variableTest10, variableTest11, variableTest12 
+                , variableTest13, variableTest14, variableTest15
+                , variableTest16, variableTest17, variableTest18 ] 
 
--- list of failing tests
+-- list of variable tests
 variableTest1 :: GoodTestCase
 variableTest1 = ("b = 4", 4)
 
@@ -305,6 +326,23 @@ variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", 168)
 variableTest12 :: GoodTestCase
 variableTest12 = ("b^a - c", 16777214)
 
+variableTest13 :: GoodTestCase
+variableTest13 = ("a=3; b=4; c=a/b; c*b", 3)
+
+variableTest14 :: GoodTestCase
+variableTest14 = ("x=   10; y = log(x); exp(y)", 10)
+
+variableTest15 :: GoodTestCase
+variableTest15 = ("x=5; x=6; x=7; 3*x; y = x*3", 21)
+
+variableTest16 :: GoodTestCase
+variableTest16 = ("x = 2; y = 10^x; log10(y)", 2)
+
+variableTest17 :: GoodTestCase
+variableTest17 = ("c = 2; d = c; d", 2) 
+
+variableTest18 :: GoodTestCase
+variableTest18 = (" x = pi; y = cos(x); acos(y)", pi)
 
 
 -- a few tests that are failing 
@@ -312,7 +350,8 @@ failingTests :: [FailingTestCase]
 failingTests = [ failingTest1, failingTest2, failingTest3
                , failingTest4, failingTest5, failingTest6
                , failingTest7, failingTest8, failingTest9
-               , failingTest10, failingTest11, failingTest12 ]
+               , failingTest10, failingTest11, failingTest12
+               , failingTest13, failingTest14, failingTest15 ]
 
 -- list of failing tests
 failingTest1 :: FailingTestCase
@@ -350,4 +389,13 @@ failingTest11 = ("(3+3)**(8+4)*3*(2+1)*4*(3+5)")
 
 failingTest12 :: FailingTestCase
 failingTest12 = ("b")
+
+failingTest13 :: FailingTestCase
+failingTest13 = ("3+3;;3+4")
+
+failingTest14 :: FailingTestCase
+failingTest14 = ("(3+3;4+4)")
+
+failingTest15 :: FailingTestCase
+failingTest15 = ("3+3, 3+3")
 
