@@ -28,7 +28,7 @@ import System.Console.Readline
 -- local imports
 import Parser
 import CalculatorState
---import HelpParser
+import HelpParser
 import InfoRoutines
 import Messages
 import Prelude
@@ -59,15 +59,15 @@ parse_it state = do
                   >> parse_it state
     Just line -> do                     -- otherwise calculate 
 
-          addHistory line
+      addHistory line
 
       -- parse it as a potential help request
       -- if it succeeds we parse the next command line, otherwise
       -- we channel it into the calculator parser
-      --case runParser help state "" line of
-      --  Right helpMsg  -> putStr helpMsg 
-      --                    >> parse_it state   
-      --  Left _         -> -}
+      case runParser help state "" line of
+        Right helpMsg  -> putStr helpMsg 
+                          >> parse_it state   
+        Left _         -> 
 
           -- parse it as a calculation or unit conversion
           case runParser main_parser state "" line of
