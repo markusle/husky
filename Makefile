@@ -8,7 +8,7 @@ docdir=$(DESTDIR)/usr/share/doc/husky-$(VERSION)
 htmldir=$(docdir)/html
 bindir=$(DESTDIR)/usr/bin
 
-GHC_FLAGS_DEVEL = -O -Wall -fwarn-simple-patterns -fwarn-tabs -fwarn-incomplete-record-updates -fwarn-monomorphism-restriction -fwarn-implicit-prelude -Werror
+GHC_FLAGS_DEVEL = -O -Wall -fwarn-simple-patterns -fwarn-tabs -fwarn-incomplete-record-updates -fwarn-monomorphism-restriction -fwarn-implicit-prelude -Werror -fno-warn-orphans
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \

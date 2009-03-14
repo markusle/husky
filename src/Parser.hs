@@ -32,9 +32,8 @@ import UnitConversionParser
 
 -- | main parser entry point
 main_parser :: CharParser CalcState ((Double,String), CalcState)
-main_parser = parser_dispatch
-              >>= \val -> getState
-              >>= \state -> return (val, state)
+main_parser = (,) <$> parser_dispatch <*> getState
+           <?> "main parser"
 
 
 -- | grammar description for parser

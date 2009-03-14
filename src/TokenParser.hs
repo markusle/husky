@@ -19,7 +19,8 @@
 --------------------------------------------------------------------}
 
 -- | functionality related to parsing tokens
-module TokenParser ( module Text.ParserCombinators.Parsec
+module TokenParser ( module Control.Applicative
+                   , module Text.ParserCombinators.Parsec
                    , builtinFunctions
                    , float
                    , identifier
@@ -42,7 +43,9 @@ module TokenParser ( module Text.ParserCombinators.Parsec
 
 
 -- imports
-import Text.ParserCombinators.Parsec 
+import Control.Applicative
+import Control.Monad (ap, MonadPlus (..))
+import Text.ParserCombinators.Parsec hiding (many,optional, (<|>)) 
 import qualified Text.ParserCombinators.Parsec.Token as PT
 import Text.ParserCombinators.Parsec.Language (haskellDef
                                               , opLetter
@@ -52,9 +55,19 @@ import Prelude
 
 
 -- local imports
-
 import CalculatorState
 
+
+-- | Applicative instance for Monad
+instance Applicative (GenParser s a) where
+  pure  = return
+  (<*>) = ap
+
+
+-- |Alternative instance for MonadPlus
+instance Alternative (GenParser s a) where
+  empty = mzero
+  (<|>) = mplus
 
 
 {- | some basic definitions for the calculator -}

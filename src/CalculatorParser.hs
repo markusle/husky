@@ -35,8 +35,8 @@ import TokenParser
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState (Double, String)
-calculator_parser = parse_statements 
-                    >>= \x -> end_of_line >> return (x,"")
+calculator_parser = (,) <$> parse_statements <* eof 
+                        <*> pure "" 
                  <?> "math expression, variable definition, " 
                      ++ "variable name"
 
@@ -45,45 +45,26 @@ calculator_parser = parse_statements
 -- have a variable definition or want to show the value
 -- stored in a variable
 define_variable :: CharParser CalcState Double
-define_variable = (whiteSpace
-                  >> variable
-                  >>= \varName -> variable_def varName )
+define_variable = variable_def_by_value 
                <?> "variable definition"
 
 
--- | check that we are at the end of the line; otherwise
--- parsing failed since we always expect to parse the 
--- full expression
-end_of_line :: CharParser CalcState ()
-end_of_line = getInput >>= \input ->
-                case length input of
-                  0 -> return ()
-                  _ -> pzero
-
-
--- | define a variable
-variable_def :: String -> CharParser CalcState Double
-variable_def varName = ( whiteSpace
-                >> reservedOp "=" 
-                >> whiteSpace 
-                >> ( variable_def_by_value varName 
-                    <|> variable_def_by_var varName)  )
-            <?> "variable"
-
 
 -- | define a variable via a literal double
-variable_def_by_value :: String -> CharParser CalcState Double
-variable_def_by_value varName = ( add_term
-            >>= \value -> updateState (insert_variable value varName)
-            >> return value )
-          <?> "variable from value"
+variable_def_by_value :: CharParser CalcState Double
+variable_def_by_value = update_var (whiteSpace *> variable) 
+   (whiteSpace *> reservedOp "=" *> whiteSpace *> add_term)
+                     <?> "variable from value"
 
 
--- | define a variable via the value of another variable
-variable_def_by_var :: String -> CharParser CalcState Double
-variable_def_by_var varName = parse_variable 
-            >>= \val -> updateState (insert_variable val varName)
-            >> return val
+-- | update the state of a variable
+update_var :: CharParser CalcState String 
+           -> CharParser CalcState Double
+           -> CharParser CalcState Double
+update_var name_p val_p = name_p
+       >>= \name -> val_p
+       >>= \val  -> updateState (insert_variable val name)
+       >> return val
 
 
 -- | parse individual statements separated by semicolon
@@ -91,8 +72,8 @@ variable_def_by_var varName = parse_variable
 -- guarantee the list is not empty; otherwise head will die
 -- on us.
 parse_statements :: CharParser CalcState Double
-parse_statements = individual_statement `sepBy1` semi
-                   >>= return . head . reverse 
+parse_statements = (head . reverse) <$> individual_statement 
+                   `sepBy1` semi
                 <?> "statement"
              
 
@@ -115,7 +96,7 @@ mul_term = exp_term `chainl1` multiply_action
 
 -- | parser for potentiation operations "^"
 exp_term :: CharParser CalcState Double
-exp_term = (whiteSpace >> factor) `chainl1` exp_action
+exp_term = (whiteSpace *> factor) `chainl1` exp_action
 
 
 -- | parser for individual factors, i.e, numbers,
@@ -131,9 +112,7 @@ factor = try signed_parenthesis
 -- | parse a potentially signed expression enclosed in parenthesis.
 -- In the case of parenzised expressions we parse -() as (-1.0)*()
 signed_parenthesis :: CharParser CalcState Double
-signed_parenthesis = parse_sign
-                     >>= \sign -> parens add_term
-                     >>= \result -> return (sign * result)
+signed_parenthesis = (*) <$> parse_sign <*> parens add_term
 
 
 -- | parse all operations we currently know about
@@ -148,50 +127,53 @@ parse_keywords = msum $ extract_ops builtinFunctions
 -- | execute the requested operator on the term enclosed
 -- in parentheses       
 execute :: OperatorAction -> CharParser CalcState Double
-execute op = parens add_term >>= return . op
+execute op = op <$> parens add_term 
 
           
 multiply_action :: CharParser CalcState (Double -> Double -> Double)
-multiply_action = (reservedOp "*" >> return (*))
-               <|> (reservedOp "/" >> return (/))
+multiply_action = (reservedOp "*" *> pure (*))
+               <|> (reservedOp "/" *> pure (/))
 
 
 add_action :: CharParser CalcState (Double -> Double -> Double)
-add_action = (reservedOp "+" >> return (+))
-          <|> (reservedOp "-" >> return (-))
+add_action = (reservedOp "+" *> pure (+))
+          <|> (reservedOp "-" *> pure (-))
 
 
 exp_action :: CharParser CalcState (Double -> Double -> Double)
-exp_action = reservedOp "^" >> return real_exp
+exp_action = reservedOp "^" *> pure real_exp
 
 
+-- | parse a number; integers are automatically promoted to double
 parse_number :: CharParser CalcState Double
-parse_number = parse_sign
-               >>= \sign -> naturalOrFloat 
-               >>= \num -> notFollowedBy alphaNum
-               >> case num of 
-                    Left i  -> return $ sign * (fromInteger i)
-                    Right x -> return (sign * x)
+parse_number = converter <$> parse_sign <*> 
+               (naturalOrFloat <* notFollowedBy alphaNum)
+    where 
+      converter sign val = case val of
+                             Left i  -> sign * (fromInteger i)
+                             Right x -> sign * x
 
 
+-- | parse the sign of a numerical expression
 parse_sign :: CharParser CalcState Double
-parse_sign = option 1.0 ( whiteSpace >> char '-' >> return (-1.0) )
+parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 
 
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
-parse_variable = ( variable 
-                   >>= \val -> whiteSpace
-                   >> get_variable_value val
-                   >>= \result -> 
-                     case result of
-                       Nothing -> pzero 
-                       Just a  -> return a )
+parse_variable = get_variable_value variable <* whiteSpace
               <?> "variable"
 
 
 -- | function retrieving a variable from the database if
 -- present 
-get_variable_value :: String -> CharParser CalcState (Maybe Double)
-get_variable_value name = getState 
-  >>= \(CalcState { varMap = myMap }) -> return $ M.lookup name myMap
+get_variable_value :: CharParser CalcState String 
+                   -> CharParser CalcState Double
+get_variable_value name_parser = getState 
+  >>= \(CalcState { varMap = myMap }) -> name_parser
+  >>= \name -> case M.lookup name myMap of
+                 Nothing -> pzero
+                 Just a  -> return a
+                            
+
+
