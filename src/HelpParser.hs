@@ -37,13 +37,13 @@ import UnitConversionParser
 
 -- | main help parser entry point
 help :: CharParser CalcState String
-help = ( help_keyword 
-       >> optionMaybe parse_help_option 
-       >>= \opt -> case opt of
-                     Nothing -> return help_info
-                     Just r  -> return r )
+help = eval_request <$> (help_keyword 
+                         *> optionMaybe parse_help_option)
     <?> "help"
-
+ where
+   eval_request x = case x of
+                      Nothing -> help_info
+                      Just r  -> r
 
 
 -- | parser for help keyword
@@ -62,9 +62,8 @@ parse_help_option = msum . map snd $ helpOptions
 
 -- | retrieve unit conversion information
 unit_info :: CharParser CalcState String
-unit_info = ( string "units"
-            >> optionMaybe parse_unit_type
-            >>= \unitType -> return $ retrieve_unit_string unitType)
+unit_info = retrieve_unit_string <$> (string "units" 
+                                      *> optionMaybe parse_unit_type)
          <?> "unit info"
 
 
@@ -73,11 +72,6 @@ about_info :: CharParser CalcState String
 about_info = string "about"
              >> return infoString
           <?> "about info"
-  where
---    about_string = "husky (v" ++ version ++ ")\n" 
---                   ++ "(C) 2009 Markus Dittrich\n"
---                   ++ "husky is licenced under the GPL V3\n"
---                   ++ "and comes WITHOUT ANY WARRANTY\n"
 
 
 -- | return all currently available help options
