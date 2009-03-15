@@ -103,7 +103,8 @@ exp_term = (whiteSpace *> factor) `chainl1` exp_action
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = try signed_parenthesis
-      <|> parse_keywords
+      <|> parse_functions
+      <|> parse_functions_int
       <|> parse_number
       <|> parse_variable
       <?> "token or variable"         
@@ -115,31 +116,52 @@ signed_parenthesis :: CharParser CalcState Double
 signed_parenthesis = (*) <$> parse_sign <*> parens add_term
 
 
--- | parse all operations we currently know about
-parse_keywords :: CharParser CalcState Double
-parse_keywords = msum $ extract_ops builtinFunctions
+-- | parse all operations of type (Double -> Double)
+-- we currently know about
+parse_functions :: CharParser CalcState Double
+parse_functions = msum $ extract_ops builtinFunctions
 
-    where
-      extract_ops = foldr (\(x,y) acc -> 
-                           ((reserved x >> execute y):acc)) [] 
+  where
+    extract_ops = foldr (\(x,y) acc -> 
+                         ((reserved x *> execute y):acc)) [] 
+    execute op  = op <$> parens add_term 
 
 
--- | execute the requested operator on the term enclosed
--- in parentheses       
-execute :: OperatorAction -> CharParser CalcState Double
-execute op = op <$> parens add_term 
+-- | parse all operations of type (Int -> Int) we currently know about
+-- NOTE: They way we do things right now to deal with Integers
+-- in the framework of our Double parser is somewhat of a 
+-- hack. In a nutshell, we check if a Double can be interpreted
+-- as an Integer and then use (of fail the parse)
+parse_functions_int :: CharParser CalcState Double
+parse_functions_int = msum $ extract_ops_int builtinFunctionsInt
 
-          
+  where
+    extract_ops_int :: [(String, Integer -> Integer)] 
+                    -> [CharParser CalcState Double]
+    extract_ops_int = foldr (\(x,y) acc -> 
+                             ((reserved x *> execute_int y):acc)) []
+
+    execute_int op  = fromInteger . op <$> ( parens add_term 
+                         >>= \val -> case is_non_negative_int val of
+                                       Just a -> return a
+                                       Nothing -> pzero 
+                         <?> "non-negative integer value" )
+                    
+
+
+-- | chain multiplicative of divisive statements
 multiply_action :: CharParser CalcState (Double -> Double -> Double)
 multiply_action = (reservedOp "*" *> pure (*))
                <|> (reservedOp "/" *> pure (/))
 
 
+-- | chain additive or subtractive statements
 add_action :: CharParser CalcState (Double -> Double -> Double)
 add_action = (reservedOp "+" *> pure (+))
           <|> (reservedOp "-" *> pure (-))
 
 
+-- | parse an exponentiation term
 exp_action :: CharParser CalcState (Double -> Double -> Double)
 exp_action = reservedOp "^" *> pure real_exp
 

@@ -22,13 +22,14 @@
 module TokenParser ( module Control.Applicative
                    , module Text.ParserCombinators.Parsec
                    , builtinFunctions
+                   , builtinFunctionsInt
                    , float
                    , identifier
                    , integer
                    , parens
+                   , keywords
                    , lexer
                    , naturalOrFloat
-                   , keywords
                    , OperatorAction
                    , operators
                    , reservedOp
@@ -56,6 +57,7 @@ import Prelude
 
 -- local imports
 import CalculatorState
+import ExtraFunctions
 
 
 -- | Applicative instance for Monad
@@ -90,13 +92,14 @@ unit_type = variable
 
 -- | these are all the names and corresponding functions
 -- of keywords we know about
-type OperatorAction = (Double -> Double)
+type OperatorAction    = (Double -> Double)
+type OperatorActionInt = (Integer -> Integer)
 
 
--- | builtin functions of the form (a -> b)
+-- | builtin functions of the form (Double -> Double)
 builtinFunctions :: [(String, OperatorAction)]
 builtinFunctions = [ ("sqrt",sqrt)
-                   , ("exp",exp)
+                   , ("exp",exp) 
                    , ("log",log)
                    , ("log2", logBase 2)
                    , ("log10", logBase 10)
@@ -111,7 +114,15 @@ builtinFunctions = [ ("sqrt",sqrt)
                    , ("tanh", tanh)
                    , ("asinh", sinh)
                    , ("acosh", cosh)
-                   , ("atanh", atanh)]
+                   , ("atanh", atanh)] 
+
+
+-- | builtin function of the type (Integer -> Double) that need
+-- type conversion from Int to Double. This is a separate category
+-- since in the parser we need to explicitly check the the
+-- user entered an Int and fail otherwise
+builtinFunctionsInt :: [(String, OperatorActionInt)]
+builtinFunctionsInt = [("fact", fact)]
 
 
 -- | all other keywords that are not regular functions
@@ -129,9 +140,10 @@ operators = ["*","/","+","-","="]
 lexer :: PT.TokenParser st
 lexer  = PT.makeTokenParser 
          ( haskellDef { reservedOpNames = operators
-                      , opLetter = oneOf "*+/^"
-                      , reservedNames   = keywords 
-                                          ++ map fst builtinFunctions 
+                      , opLetter      = oneOf "*+/^"
+                      , reservedNames = keywords 
+                                        ++ map fst builtinFunctions 
+                                        ++ map fst builtinFunctionsInt
                       } )
 
 
