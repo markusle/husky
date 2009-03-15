@@ -72,16 +72,16 @@ unit_conversion = (whiteSpace
 -- We can't use parse_number since we'd like to explictly allow
 -- things like 1m or 2yd which parse_number rejects
 parse_unit_value :: CharParser CalcState Double
-parse_unit_value = parse_sign 
-        >>= \sign -> naturalOrFloat 
-        >>= \num -> case num of 
-                      Left i  -> return $ sign * (fromInteger i)
-                      Right d -> return (sign * d)          
+parse_unit_value = converter <$> parse_sign <*> naturalOrFloat 
+    where 
+      converter sign val = case val of
+                             Left i  -> sign * (fromInteger i)
+                             Right x -> sign * x
 
 
 -- | parse the optional sign in front of a unit value
 parse_sign :: CharParser CalcState Double
-parse_sign = option 1.0 ( whiteSpace >> char '-' >> return (-1.0) )
+parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 
 
 -- | parse for all acceptable conversion keywords
@@ -95,9 +95,5 @@ conversion_keyword = reserved "\\c"
 -- a unit conversion statement. It should be of the form 
 -- (a la Haskell ;) ) " :: unit_type "
 parse_unit_type :: CharParser CalcState String
-parse_unit_type = (whiteSpace
-                  >> string "::"
-                  >> whiteSpace
-                  >> unit_type )
+parse_unit_type = whiteSpace *> string "::" *> whiteSpace *> unit_type
                <?> "unit_type"
-
