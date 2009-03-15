@@ -106,7 +106,7 @@ good_test_driver state (x:xs) = do
   let expected = snd x
   case runParser main_parser state "" tok of
     Left er -> tell [TestResult False tok (show expected) (show er)]
-    Right (result, newState) -> examine_result expected result tok
+    Right (UnitResult result, newState) -> examine_result expected result tok
         
       where
         -- NOTE: when we compare target and actual result we
@@ -135,15 +135,18 @@ failing_test_driver _ []         = return ()
 failing_test_driver state (x:xs) = do
 
   case runParser main_parser state "" x of
-    Left er           -> tell [TestResult True x "Failure" "Failure"]
-                         >> failing_test_driver state xs
-    Right (_,status)  -> case have_special_error status of
-                           Just err -> tell [TestResult True x 
-                                             "Failure" "Failure"]
-                                       >> failing_test_driver state xs
-                           Nothing  -> tell [TestResult False x 
-                                             "Failure" "Success"]
+    Left er               -> 
+        tell [TestResult True x "Failure" "Failure"]
+        >> failing_test_driver state xs
+
+    Right (ErrResult _,_) -> 
+        tell [TestResult True x "Failure" "Failure"]
+        >> failing_test_driver state xs
+
+    _             -> 
+        tell [TestResult False x "Failure" "Success"]
  
+
 -- | our test results consist of a bool indicating success
 -- or failure, the test token as well as the expected and
 -- received result
@@ -343,10 +346,10 @@ prop_invert :: String -> String -> Integer -> Bool
 prop_invert u1 u2 i =
   case runParser main_parser defaultCalcState "" $ test_to i of
     Left _  -> False
-    Right ((x,_),_) -> 
+    Right (UnitResult (x,_),_) -> 
       case runParser main_parser defaultCalcState "" $ test_from x of
         Left _ -> False
-        Right ((y,_),_) -> is_equal (fromInteger i) y
+        Right (UnitResult (y,_),_) -> is_equal (fromInteger i) y
 
   where
     test_to z   = "\\c " ++ (show z) ++ u1 ++ " " ++ u2

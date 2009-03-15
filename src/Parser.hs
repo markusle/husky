@@ -31,7 +31,7 @@ import UnitConversionParser
 
 
 -- | main parser entry point
-main_parser :: CharParser CalcState ((Double,String), CalcState)
+main_parser :: CharParser CalcState (ParseResult, CalcState)
 main_parser = (,) <$> parser_dispatch <*> getState
            <?> "main parser"
 
@@ -39,7 +39,7 @@ main_parser = (,) <$> parser_dispatch <*> getState
 -- | grammar description for parser
 -- presently we either dispatch to unit_conversion parser
 -- or calculator parser
-parser_dispatch :: CharParser CalcState (Double,String)
+parser_dispatch :: CharParser CalcState ParseResult
 parser_dispatch = try unit_conversion  
                <|> calculator_parser
                <?> "unit conversion or calculator expression"

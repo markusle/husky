@@ -105,7 +105,7 @@ good_test_driver state (x:xs) = do
   let expected = snd x
   case runParser main_parser state "" tok of
     Left er -> tell [TestResult False tok (show expected) (show er)]
-    Right ((result,_), newState) -> examine_result expected result tok
+    Right (DblResult result, newState) -> examine_result expected result tok
         
       where
         -- NOTE: when we compare target and actual result we

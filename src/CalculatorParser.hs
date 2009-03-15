@@ -34,11 +34,28 @@ import TokenParser
 
 
 -- | grammar description for calculator parser
-calculator_parser :: CharParser CalcState (Double, String)
-calculator_parser = (,) <$> parse_statements <* eof 
-                        <*> pure "" 
+calculator_parser :: CharParser CalcState ParseResult
+calculator_parser = parse_statements <* eof 
                  <?> "math expression, variable definition, " 
                      ++ "variable name"
+
+
+-- | parse individual statements separated by semicolon
+-- NOTE: 'sepBy1' as opposed to 'sepBy' is crucial here to
+-- guarantee the list is not empty; otherwise head will die
+-- on us.
+parse_statements :: CharParser CalcState ParseResult
+parse_statements = (head . reverse) <$> individual_statement 
+                   `sepBy1` semi
+                <?> "statement"
+             
+
+-- | parse an individual statement, i.e. either a computation
+-- or a variable definition
+individual_statement :: CharParser CalcState ParseResult
+individual_statement = try (DblResult <$> define_variable) 
+                    <|> (DblResult <$> add_term) 
+                    <?> "expression or variable definition"
 
 
 -- | if the line starts off with a string we either
@@ -47,7 +64,6 @@ calculator_parser = (,) <$> parse_statements <* eof
 define_variable :: CharParser CalcState Double
 define_variable = variable_def_by_value 
                <?> "variable definition"
-
 
 
 -- | define a variable via a literal double
@@ -65,23 +81,6 @@ update_var name_p val_p = name_p
        >>= \name -> val_p
        >>= \val  -> updateState (insert_variable val name)
        >> return val
-
-
--- | parse individual statements separated by semicolon
--- NOTE: 'sepBy1' as opposed to 'sepBy' is crucial here to
--- guarantee the list is not empty; otherwise head will die
--- on us.
-parse_statements :: CharParser CalcState Double
-parse_statements = (head . reverse) <$> individual_statement 
-                   `sepBy1` semi
-                <?> "statement"
-             
-
--- | parse an individual statement, i.e. either a computation
--- or a variable definition
-individual_statement :: CharParser CalcState Double
-individual_statement = try define_variable <|> add_term 
-                    <?> "expression or variable definition"
 
 
 -- | parser for expressions chained via "+" or "-"
@@ -198,4 +197,8 @@ get_variable_value name_parser = getState
                  Just a  -> return a
                             
 
-
+-- | this is how valid variable names have to look like
+variable :: CharParser CalcState String
+variable = letter 
+           >>= \first -> many alphaNum
+           >>= \rest  -> return $ [first] ++ rest

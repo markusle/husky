@@ -32,13 +32,11 @@ module TokenParser ( module Control.Applicative
                    , naturalOrFloat
                    , OperatorAction
                    , operators
+                   , ParseResult(..)
                    , reservedOp
                    , reserved
                    , semi
                    , stringLiteral
-                   , unit_value
-                   , unit_type
-                   , variable 
                    , whiteSpace
                    ) where
 
@@ -46,19 +44,21 @@ module TokenParser ( module Control.Applicative
 -- imports
 import Control.Applicative
 import Control.Monad (ap, MonadPlus (..))
+import Prelude
 import Text.ParserCombinators.Parsec hiding (many,optional, (<|>)) 
 import qualified Text.ParserCombinators.Parsec.Token as PT
 import Text.ParserCombinators.Parsec.Language (haskellDef
                                               , opLetter
                                               , reservedOpNames
                                               , reservedNames )
-import Prelude
 
 
 -- local imports
-import CalculatorState
 import ExtraFunctions
 
+
+
+{- Definitions for Applicative Parsec instance -}
 
 -- | Applicative instance for Monad
 instance Applicative (GenParser s a) where
@@ -72,23 +72,19 @@ instance Alternative (GenParser s a) where
   (<|>) = mplus
 
 
-{- | some basic definitions for the calculator -}
 
--- | this is how valid variable names have to look like
-variable :: CharParser CalcState String
-variable = letter 
-           >>= \first -> many alphaNum
-           >>= \rest  -> return $ [first] ++ rest
+{- some basic definitions for the calculator -}
+
+-- | data container for return type of main calculator parser
+data ParseResult = 
+    DblResult Double            -- double result
+  | UnitResult (Double,String)  -- unit conversion result
+  | ErrResult String            -- error occured, has error message
+    deriving(Eq,Show,Ord)
 
 
--- | an identifier for a unit_value and unit_type is just a variable 
--- (at least for now). 
-unit_value :: CharParser CalcState String
-unit_value = variable
 
-unit_type :: CharParser CalcState String
-unit_type = variable
-
+{- set up the Token Parser -}
 
 -- | these are all the names and corresponding functions
 -- of keywords we know about
@@ -132,8 +128,6 @@ keywords = ["\\convert","\\c"]
 operators :: [String]
 operators = ["*","/","+","-","="]
 
-
-{- | prepare needed parsers from Parsec.Token -}
 
 -- | function generating a token parser based on a 
 -- lexical parser combined with a language record definition
@@ -192,3 +186,6 @@ whiteSpace = PT.whiteSpace lexer
 -- | token parser for semicolon
 semi :: CharParser st String
 semi = PT.semi lexer
+
+
+

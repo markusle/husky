@@ -61,9 +61,9 @@ parse_it state = do
 
       addHistory line
 
-      -- parse it as a potential help request
-      -- if it succeeds we parse the next command line, otherwise
-      -- we channel it into the calculator parser
+      {- parse it as a potential help request if it succeeds we 
+         parse the next command line, otherwise we channel it 
+         into the calculator parser -}
       case runParser help state "" line of
         Right helpMsg  -> putStr helpMsg 
                           >> parse_it state   
@@ -75,16 +75,16 @@ parse_it state = do
             Left er  -> print_error_message (show er) 
                         >> parse_it state
 
-            -- if the parser succeeds we still check for special
-            -- error conditions in our parse state that may have
-            -- been triggered by errors outside the parser (e.g.,
-            -- unit conversion may have failed for lack of proper
-            -- conversion function etc.)
-            Right ((result,unit), newState) -> 
-              case have_special_error newState of
-                Just err -> (putStr $ "Error: " ++ err)
-                Nothing  -> husky_result $ (show result):[unit]
+            {- if the parser succeeds we do one of the following:
+               1) If the return value is a DblResult or UnitResult we 
+                  just print it
+               2) If the return value is a ErrResult we print the
+                  the associated error string -}
+            Right (result, newState) -> 
+                case result of
+                  DblResult d      -> husky_result $ (show d):[""]
+                  UnitResult (v,u) -> husky_result $ (show v):[u]
+                  ErrResult err    -> (putStrLn $ "Error: " ++ err)
 
-              >> let cleanState = reset_state newState in
-                 parse_it cleanState
+                 >> parse_it newState
 

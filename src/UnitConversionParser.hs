@@ -31,13 +31,26 @@ import TokenParser
 import UnitConverter
 
 
+-- | an identifier for a unit_value and unit_type 
+unit_value :: CharParser CalcState String
+unit_value = unit_variable
+
+unit_type :: CharParser CalcState String
+unit_type = unit_variable
+
+unit_variable :: CharParser CalcState String
+unit_variable = letter 
+           >>= \first -> many alphaNum
+           >>= \rest  -> return $ [first] ++ rest
+
+
 -- | parser for unit conversions 
 -- the user can request a conversion between two compatible
 -- unit-full values (temperatures, lengths, ...).
 -- The command spec is 
 --     conv <value in unit1> <unit1> <unit2> [ :: <unit type> ] 
 -- and returns <value in unit2>
-unit_conversion :: CharParser CalcState (Double,String)
+unit_conversion :: CharParser CalcState ParseResult
 unit_conversion = (whiteSpace
                   >> conversion_keyword
                   >> whiteSpace
@@ -50,9 +63,8 @@ unit_conversion = (whiteSpace
                   >> optionMaybe parse_unit_type 
                   >>= \unitType ->
                     case convert_unit unit1 unit2 unitType value of
-                      Left err           -> add_error_message err 
-                                             >> return (0,"") 
-                      Right (conv, unit) -> return (conv,unit) )
+                      Left err           -> return $ ErrResult err
+                      Right (conv, unit) -> return $ UnitResult (conv,unit) )
                <?> "unit conversion"
  
 
@@ -77,13 +89,6 @@ conversion_keyword :: CharParser CalcState ()
 conversion_keyword = reserved "\\c" 
                   <|> reserved "\\convert"
                   <?> "(c)onv keyword"
-
-
--- | this function adds an error message to the queue of
--- special (outside of parsing errors) to the error
--- queue
-add_error_message :: String -> CharParser CalcState ()
-add_error_message = updateState . insert_error
 
 
 -- | this parser parses an (optional) unit type signature following 

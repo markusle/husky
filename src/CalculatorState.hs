@@ -22,11 +22,8 @@
 -- the calculator. Eventually, these might all find a home
 -- in their separate modules
 module CalculatorState ( CalcState(..)
-                       , have_special_error
                        , defaultCalcState 
-                       , insert_error
                        , insert_variable
-                       , reset_state
                        ) where
 
 
@@ -46,7 +43,6 @@ import Prelude
 data CalcState = CalcState 
     { 
       varMap   :: M.Map String Double   
-    , errValue :: [String]
     }
 
 
@@ -54,34 +50,13 @@ defaultCalcState :: CalcState
 defaultCalcState = CalcState 
     { 
       varMap   = M.fromList constantList 
-    , errValue = []
     }
-
-
--- | function returning special error message if present
-have_special_error :: CalcState -> Maybe String
-have_special_error (CalcState { errValue = msg }) =
-    if (null msg)
-       then Nothing
-       else Just . unlines $ msg
 
 
 -- | function adding a new variable to the database
 insert_variable :: Double -> String -> CalcState -> CalcState
 insert_variable num name state@(CalcState { varMap = theMap }) =
     state { varMap = M.insert name num theMap } 
-
-
--- | function inserting a new special error message into
--- the error queue
-insert_error :: String -> CalcState -> CalcState
-insert_error err state@(CalcState { errValue = val }) = 
-        state { errValue = err:val }
-
-              
--- | function resetting the special error queue 
-reset_state :: CalcState -> CalcState
-reset_state state = state { errValue = [] }
 
 
 -- | provide a few useful mathematical constants that we
