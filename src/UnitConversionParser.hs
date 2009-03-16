@@ -51,22 +51,18 @@ unit_variable = letter
 --     conv <value in unit1> <unit1> <unit2> [ :: <unit type> ] 
 -- and returns <value in unit2>
 unit_conversion :: CharParser CalcState ParseResult
-unit_conversion = (whiteSpace
-                  >> conversion_keyword
-                  >> whiteSpace
-                  >> parse_unit_value
-                  >>= \value -> whiteSpace
-                  >> unit_value
-                  >>= \unit1 -> whiteSpace
-                  >> unit_value
-                  >>= \unit2 -> whiteSpace
-                  >> optionMaybe parse_unit_type 
-                  >>= \unitType ->
-                    case convert_unit unit1 unit2 unitType value of
-                      Left err           -> return $ ErrResult err
-                      Right (conv, unit) -> return $ UnitResult (conv,unit) )
-               <?> "unit conversion"
- 
+unit_conversion = whiteSpace *> conversion_keyword *> 
+                  ( converter 
+                   <$> (whiteSpace *> parse_unit_value) 
+                   <*> (whiteSpace *> unit_value) 
+                   <*> (whiteSpace *> unit_value) 
+                   <*> (whiteSpace *> optionMaybe parse_unit_type) )
+
+  where
+    converter val u1 u2 utype = case convert_unit val u1 u2 utype of
+                    Left err          -> ErrResult err
+                    Right (conv,unit) -> UnitResult (conv,unit)
+
 
 -- | parse a unit value
 -- We can't use parse_number since we'd like to explictly allow

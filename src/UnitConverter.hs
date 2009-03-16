@@ -40,9 +40,9 @@ import PrettyPrint
 --    with a hopefully useful error message.
 -- 2) If a user supplies a unit type specifier we directly look
 --    through the corresponding map for a conversion
-convert_unit :: String -> String -> Maybe String -> Double 
+convert_unit :: Double -> String -> String -> Maybe String 
              -> Either String (Double,String) 
-convert_unit unit1 unit2 unitType value = 
+convert_unit value unit1 unit2 unitType = 
     
   case unitType of
      -- no unit type specifier: look through all unit maps

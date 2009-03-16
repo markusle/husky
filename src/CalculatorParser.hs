@@ -199,6 +199,4 @@ get_variable_value name_parser = getState
 
 -- | this is how valid variable names have to look like
 variable :: CharParser CalcState String
-variable = letter 
-           >>= \first -> many alphaNum
-           >>= \rest  -> return $ [first] ++ rest
+variable = (:) <$> letter <*> many alphaNum
