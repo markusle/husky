@@ -73,6 +73,7 @@ instance Alternative (GenParser s a) where
 
 
 
+
 {- some basic definitions for the calculator -}
 
 -- | data container for return type of main calculator parser

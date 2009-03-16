@@ -18,7 +18,7 @@ extra-source-files: README
 
 Executable husky
   Build-Depends:  base, readline >= 1.0.1.0, containers >= 0.1.0.0,
-                  parsec >= 2.1.0.0, mtl >= 1.1.0.0, 
+                  parsec == 2.1.*, mtl >= 1.1.0.0, 
                   old-locale >= 1.0.0.0, time >= 1.0.0.0
   ghc-options:    -O2
   Main-Is:        husky.hs
