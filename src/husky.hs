@@ -51,13 +51,21 @@ parse_it state = do
   input <- readline $ color_string Red "husky> "
   case input of 
     Nothing   -> parse_it state
-    Just ""    -> parse_it state        -- continue without parsing
-    Just "\\q" -> return ()             -- quit
-    Just "\\v" -> list_variables state  -- list all defined variables
+
+    Just ""    -> parse_it state            -- continue w/o parsing
+
+    Just "\\q" -> confirm_and_exit 
+                  >>= \ans -> case ans of   -- quit after confirmation
+                    True -> return ()       -- otherwise continue
+                    False -> parse_it state
+
+    Just "\\v" -> list_variables state      -- list all defined 
+                  >> parse_it state         -- variables
+
+    Just "\\t" -> show_time                 -- show current time
                   >> parse_it state
-    Just "\\t" -> show_time             -- show current time
-                  >> parse_it state
-    Just line -> do                     -- otherwise calculate 
+
+    Just line -> do                         -- otherwise calculate 
 
       addHistory line
 

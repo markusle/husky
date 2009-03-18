@@ -21,7 +21,8 @@
 -- | routines called from the toplevel readline instance without
 -- before any parsing is done, aka info routines of any sort and
 -- shape
-module InfoRoutines ( list_variables 
+module InfoRoutines ( confirm_and_exit
+                    , list_variables 
                     , show_time
                     ) where
 
@@ -58,3 +59,12 @@ show_time = getCurrentTime
                 in
                   putStrLn timeString
 
+
+-- | ask user for confirmation before exiting
+confirm_and_exit :: IO Bool
+confirm_and_exit = putStrLn "Really quit (y/n)? "
+                   >> getLine
+                   >>= \answer -> case answer of 
+                                   "y" -> return True
+                                   "n" -> return False
+                                   _   -> confirm_and_exit
