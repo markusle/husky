@@ -123,7 +123,10 @@ parse_functions = msum $ extract_ops builtinFunctions
   where
     extract_ops = foldr (\(x,y) acc -> 
                          ((reserved x *> execute y):acc)) [] 
-    execute op  = op <$> parens add_term 
+    execute op  =  op <$> (  parens add_term 
+                         <|> parse_number
+                         <|> parse_variable )
+               <?> "function parsing"
 
 
 -- | parse all operations of type (Int -> Int) we currently know about
@@ -140,12 +143,15 @@ parse_functions_int = msum $ extract_ops_int builtinFunctionsInt
     extract_ops_int = foldr (\(x,y) acc -> 
                              ((reserved x *> execute_int y):acc)) []
 
-    execute_int op  = fromInteger . op <$> ( parens add_term 
-                         >>= \val -> case is_non_negative_int val of
-                                       Just a -> return a
-                                       Nothing -> pzero 
-                         <?> "non-negative integer value" )
-                    
+    execute_int op  =  fromInteger . op <$> (  parens add_term 
+                                           <|> parse_number 
+                                           <|> parse_variable 
+                                               >>= evaluate_int )
+
+    evaluate_int =  \val -> case is_non_negative_int val of
+                              Just a -> return a
+                              Nothing -> pzero 
+                    <?> "non-negative integer value" 
 
 
 -- | chain multiplicative of divisive statements

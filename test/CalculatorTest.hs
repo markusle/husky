@@ -47,18 +47,23 @@ main = do
                simpleTests
   status1 <- examine_output simple
 
+  putStr $ color_string Cyan "\nFunction parsing tests:\n"
+  let vars = execWriter $ good_test_driver defaultCalcState 
+             functionTests
+  status2 <- examine_output vars
+ 
   putStr $ color_string Cyan "\nVariable tests:\n"
   let vars = execWriter $ good_test_driver defaultCalcState 
              variableTests
-  status2 <- examine_output vars
+  status3 <- examine_output vars
 
   putStr $ color_string Cyan "\nFailure tests:\n"
   let failing = execWriter $ failing_test_driver defaultCalcState 
                 failingTests
-  status3 <- examine_output failing
+  status4 <- examine_output failing
 
 
-  let status = status1 && status2 && status3
+  let status = status1 && status2 && status3 && status4
   if status == True then
       exitWith ExitSuccess
     else
@@ -343,6 +348,49 @@ variableTest17 = ("c = 2; d = c; d", 2)
 
 variableTest18 :: GoodTestCase
 variableTest18 = (" x = pi; y = cos(x); acos(y)", pi)
+
+
+-- a few tests involving builtin functions, mostly to check
+-- for proper parsing rather than proper math
+functionTests :: [GoodTestCase]
+functionTests = [ functionTest1, functionTest2, functionTest3
+                , functionTest4, functionTest5, functionTest6
+                , functionTest7, functionTest8, functionTest9
+                , functionTest10, functionTest11]
+
+-- list of variable tests
+functionTest1 :: GoodTestCase
+functionTest1 = ("sqrt 2", 1.4142135623730951)
+
+functionTest2 :: GoodTestCase
+functionTest2 = ("sqrt 2 * 2", 2.8284271247461903)
+
+functionTest3 :: GoodTestCase
+functionTest3 = ("sqrt 2*2", 2.8284271247461903)
+
+functionTest4 :: GoodTestCase
+functionTest4 = ("sqrt(2*2)", 2)
+
+functionTest5 :: GoodTestCase
+functionTest5 = ("cos 0.5", 0.8775825618903728)
+
+functionTest6 :: GoodTestCase
+functionTest6 = ("cos 0.5 +0.5", 1.3775825618903728)
+
+functionTest7 :: GoodTestCase
+functionTest7 = ("cos 0.5 - 0.5", 0.37758256189037276)
+
+functionTest8 :: GoodTestCase
+functionTest8 = ("cos(0.5 -0.5)", 1.0)
+
+functionTest9 :: GoodTestCase
+functionTest9 = ("cos -0.5", 0.8775825618903728)
+
+functionTest10 :: GoodTestCase
+functionTest10 = ("cos(-0.5)", 0.8775825618903728) 
+
+functionTest11 :: GoodTestCase
+functionTest11 = ("cos 0.5 - cos -0.5", 0)
 
 
 -- a few tests that are failing 
