@@ -104,8 +104,8 @@ factor :: CharParser CalcState Double
 factor = try signed_parenthesis
       <|> parse_functions
       <|> parse_functions_int
-      <|> parse_number
-      <|> parse_variable
+      <|> try parse_number           -- need try because of possible
+      <|> parse_variable             -- unitary -
       <?> "token or variable"         
 
 
@@ -175,10 +175,11 @@ exp_action = reservedOp "^" *> pure real_exp
 parse_number :: CharParser CalcState Double
 parse_number = converter <$> parse_sign <*> 
                (naturalOrFloat <* notFollowedBy alphaNum)
-    where 
-      converter sign val = case val of
-                             Left i  -> sign * (fromInteger i)
-                             Right x -> sign * x
+            <?> "signed integer or double"
+  where 
+    converter sign val = case val of
+                           Left i  -> sign * (fromInteger i)
+                           Right x -> sign * x
 
 
 -- | parse the sign of a numerical expression
@@ -188,7 +189,8 @@ parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
-parse_variable = get_variable_value variable <* whiteSpace
+parse_variable = (*) <$> parse_sign <*>
+                 (get_variable_value variable <* whiteSpace)
               <?> "variable"
 
 
