@@ -80,6 +80,7 @@ instance Alternative (GenParser s a) where
 data ParseResult = 
     DblResult Double            -- double result
   | UnitResult (Double,String)  -- unit conversion result
+  | StrResult String            -- no result (e.g. function def)
   | ErrResult String            -- error occured, has error message
     deriving(Eq,Show,Ord)
 
