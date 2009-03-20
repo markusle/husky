@@ -55,7 +55,7 @@ show_time = getCurrentTime
                 let 
                     localTime  = utcToLocalTime zone utcTime 
                     timeString = formatTime defaultTimeLocale 
-                                 "%a %b %m %Y  <>  %T %Z " localTime 
+                                 "%a %b %d %Y  <>  %T %Z " localTime 
                 in
                   putStrLn timeString
 
