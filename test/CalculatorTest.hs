@@ -185,7 +185,8 @@ simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
               , simpleTest21, simpleTest22, simpleTest23
               , simpleTest24, simpleTest25, simpleTest26
               , simpleTest27, simpleTest28, simpleTest29
-              , simpleTest30, simpleTest31, simpleTest32]
+              , simpleTest30, simpleTest31, simpleTest32
+              , simpleTest33, simpleTest34]
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
@@ -284,6 +285,12 @@ simpleTest31 = ("3*1;3;3;3;3  ;-1/-1/-1/-1", 1.0)
 simpleTest32 :: GoodTestCase
 simpleTest32 = ("4^4;-(-(-1))", -1)
 
+simpleTest33 :: GoodTestCase
+simpleTest33 = ("-3", -3)
+
+simpleTest34 :: GoodTestCase
+simpleTest34 = (" -    9  ", -9)
+
 
 -- a few tests involving variables
 variableTests :: [GoodTestCase]
@@ -292,7 +299,8 @@ variableTests = [ variableTest1, variableTest2, variableTest3
                 , variableTest7, variableTest8, variableTest9
                 , variableTest10, variableTest11, variableTest12 
                 , variableTest13, variableTest14, variableTest15
-                , variableTest16, variableTest17, variableTest18 ] 
+                , variableTest16, variableTest17, variableTest18
+                , variableTest19, variableTest20 ] 
 
 -- list of variable tests
 variableTest1 :: GoodTestCase
@@ -348,6 +356,13 @@ variableTest17 = ("c = 2; d = c; d", 2)
 
 variableTest18 :: GoodTestCase
 variableTest18 = (" x = pi; y = cos(x); acos(y)", pi)
+
+variableTest19 :: GoodTestCase
+variableTest19 = ("a = 5; -a", -5.0) 
+
+variableTest20 :: GoodTestCase
+variableTest20 = ("b= 15; 3*( - b)", -45)
+
 
 
 -- a few tests involving builtin functions, mostly to check

@@ -173,7 +173,7 @@ exp_action = reservedOp "^" *> pure real_exp
 
 -- | parse a number; integers are automatically promoted to double
 parse_number :: CharParser CalcState Double
-parse_number = converter <$> parse_sign <*> 
+parse_number = converter <$> (parse_sign <* whiteSpace) <*> 
                (naturalOrFloat <* notFollowedBy alphaNum)
             <?> "signed integer or double"
   where 
@@ -189,7 +189,7 @@ parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
-parse_variable = (*) <$> parse_sign <*>
+parse_variable = (*) <$> (parse_sign <* whiteSpace) <*>
                  (get_variable_value variable <* whiteSpace)
               <?> "variable"
 
