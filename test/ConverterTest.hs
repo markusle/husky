@@ -192,64 +192,64 @@ simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
-simpleTest1 = ("\\c 0F C", (-17.77777777777778,"C") )
+simpleTest1 = ("conv 0F C", (-17.77777777777778,"C") )
 
 simpleTest2 :: GoodTestCase
-simpleTest2 = ("\\c 0C F", (32,"F"))
+simpleTest2 = ("conv 0C F", (32,"F"))
 
 simpleTest3 :: GoodTestCase
-simpleTest3 = ("\\c -12C K", (261.15,"K"))
+simpleTest3 = ("conv -12C K", (261.15,"K"))
 
 simpleTest4 :: GoodTestCase
-simpleTest4 = ("\\c -12K C", (-285.15,"C"))
+simpleTest4 = ("conv -12K C", (-285.15,"C"))
 
 simpleTest5 :: GoodTestCase
-simpleTest5 = ("\\c 23F K", (268.15,"K"))
+simpleTest5 = ("conv 23F K", (268.15,"K"))
 
 simpleTest6 :: GoodTestCase
-simpleTest6 = ("\\c 45K F", (-378.67,"F"))
+simpleTest6 = ("conv 45K F", (-378.67,"F"))
  
 simpleTest7 :: GoodTestCase
-simpleTest7 = ("\\c 1ft m", (0.3048,"m"))
+simpleTest7 = ("conv 1ft m", (0.3048,"m"))
 
 simpleTest8 :: GoodTestCase
-simpleTest8 = ("\\c 4m ft", (13.123359580052492,"ft"))
+simpleTest8 = ("conv 4m ft", (13.123359580052492,"ft"))
 
 simpleTest9 :: GoodTestCase
-simpleTest9 = ("\\c 1km mi", (0.621371192237334,"mi"))
+simpleTest9 = ("conv 1km mi", (0.621371192237334,"mi"))
 
 simpleTest10 :: GoodTestCase
-simpleTest10 = ("\\c 5km nmi", (2.6997840172786174, "nmi"))
+simpleTest10 = ("conv 5km nmi", (2.6997840172786174, "nmi"))
 
 simpleTest11 :: GoodTestCase
-simpleTest11 = ("\\c 23.1m ft", (75.78740157480314, "ft"))
+simpleTest11 = ("conv 23.1m ft", (75.78740157480314, "ft"))
 
 simpleTest12 :: GoodTestCase
-simpleTest12 = ("\\c 0.45mi km", (0.7242048, "km"))
+simpleTest12 = ("conv 0.45mi km", (0.7242048, "km"))
 
 simpleTest13 :: GoodTestCase
-simpleTest13 = ("\\c 43.2mi m", (69523.66080000001, "m"))
+simpleTest13 = ("conv 43.2mi m", (69523.66080000001, "m"))
 
 simpleTest14 :: GoodTestCase
-simpleTest14 = ("\\c 4.2m in", (165.35433070866142, "in"))
+simpleTest14 = ("conv 4.2m in", (165.35433070866142, "in"))
 
 simpleTest15 :: GoodTestCase
-simpleTest15 = ("\\c 34.2m mi", (2.125089477451682e-2, "mi"))
+simpleTest15 = ("conv 34.2m mi", (2.125089477451682e-2, "mi"))
 
 simpleTest16 :: GoodTestCase
-simpleTest16 = ("\\c 123.3m nmi", (6.657667386609072e-2, "nmi"))
+simpleTest16 = ("conv 123.3m nmi", (6.657667386609072e-2, "nmi"))
 
 simpleTest17 :: GoodTestCase
-simpleTest17 = ("\\c 1.23m yd", (1.3451443569553807, "yd"))
+simpleTest17 = ("conv 1.23m yd", (1.3451443569553807, "yd"))
 
 simpleTest18 :: GoodTestCase
-simpleTest18 = ("\\c 0.23nmi km", (0.42596, "km"))
+simpleTest18 = ("conv 0.23nmi km", (0.42596, "km"))
 
 simpleTest19 :: GoodTestCase
-simpleTest19 = ("\\c 1.2nmi m", (2222.4, "m"))
+simpleTest19 = ("conv 1.2nmi m", (2222.4, "m"))
 
 simpleTest20 :: GoodTestCase
-simpleTest20 = ("\\c 1.23yd m", (1.124712, "m"))
+simpleTest20 = ("conv 1.23yd m", (1.124712, "m"))
 
 
 -- a few tests that are failing 
@@ -261,40 +261,40 @@ failingTests = [ failingTest1, failingTest2, failingTest3
 
 -- list of failing tests
 failingTest1 :: FailingTestCase
-failingTest1 = ("\\c 1F F")
+failingTest1 = ("conv 1F F")
 
 failingTest2 :: FailingTestCase
-failingTest2 = ("\\c 1C D")
+failingTest2 = ("conv 1C D")
 
 failingTest3 :: FailingTestCase
-failingTest3 = ("\\c C F")
+failingTest3 = ("conv C F")
 
 failingTest4 :: FailingTestCase
-failingTest4 = ("\\c 1F mi")
+failingTest4 = ("conv 1F mi")
 
 failingTest5 :: FailingTestCase
-failingTest5 = ("\\c 1mi mi")
+failingTest5 = ("conv 1mi mi")
 
 failingTest6 :: FailingTestCase
-failingTest6 = ("\\c 1mi 1K")
+failingTest6 = ("conv 1mi 1K")
 
 failingTest7 :: FailingTestCase
-failingTest7 = ("\\c 1nmi yd")
+failingTest7 = ("conv 1nmi yd")
 
 failingTest8 :: FailingTestCase
-failingTest8 = ("\\c 1yd yd")
+failingTest8 = ("conv 1yd yd")
 
 failingTest9 :: FailingTestCase
-failingTest9 = ("\\c 1K K")
+failingTest9 = ("conv 1K K")
 
 failingTest10 :: FailingTestCase
-failingTest10 = ("\\c 1F F")
+failingTest10 = ("conv 1F F")
 
 failingTest11 :: FailingTestCase
 failingTest11 = ("c 1C yd")
 
 failingTest12 :: FailingTestCase
-failingTest12 = ("\\c c c 1")
+failingTest12 = ("conv c c 1")
 
 
 -- | list of unit conversion pairs for inversion test
@@ -352,5 +352,5 @@ prop_invert u1 u2 i =
         Right (UnitResult (y,_),_) -> is_equal (fromInteger i) y
 
   where
-    test_to z   = "\\c " ++ (show z) ++ u1 ++ " " ++ u2
-    test_from z = "\\c " ++ (show z) ++ u2 ++ " " ++ u1
+    test_to z   = "conv " ++ (show z) ++ u1 ++ " " ++ u2
+    test_from z = "conv " ++ (show z) ++ u2 ++ " " ++ u1

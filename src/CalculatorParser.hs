@@ -53,17 +53,9 @@ parse_statements = (head . reverse) <$> individual_statement
 -- | parse an individual statement, i.e. either a computation
 -- , a function definition, or a variable definition
 individual_statement :: CharParser CalcState ParseResult
-individual_statement = --try (StrResult <$> parse_function) 
-                       try (DblResult <$> define_variable) 
+individual_statement = try (DblResult <$> define_variable) 
                     <|> (DblResult <$> add_term) 
                     <?> "expression or variable definition"
-
-
-
--- | parse a possible function definition
---parse_function :: CharParser CalcState String
---parse_function = (variable <* whiteSpace) <*>
-                 
 
 
 -- | if the line starts off with a string we either

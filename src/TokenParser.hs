@@ -31,8 +31,8 @@ module TokenParser ( module Control.Applicative
                    , lexer
                    , naturalOrFloat
                    , OperatorAction
-                   , operators
                    , ParseResult(..)
+                   , operators
                    , reservedOp
                    , reserved
                    , semi
@@ -73,17 +73,13 @@ instance Alternative (GenParser s a) where
 
 
 
-
-{- some basic definitions for the calculator -}
-
--- | data container for return type of main calculator parser
+{- define possible Parse Results -}
 data ParseResult = 
     DblResult Double            -- double result
   | UnitResult (Double,String)  -- unit conversion result
   | StrResult String            -- no result (e.g. function def)
   | ErrResult String            -- error occured, has error message
     deriving(Eq,Show,Ord)
-
 
 
 {- set up the Token Parser -}

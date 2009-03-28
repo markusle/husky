@@ -52,9 +52,10 @@ is_equal x y = abs(x-y) <= abs(x) * dbl_epsilon
 -- If yes, the number seems to be an Integer and we return it,
 -- otherwise Nothing
 is_non_negative_int :: Double -> Maybe Integer
-is_non_negative_int x = case is_equal (fromInteger . floor $ x) x of
-                          True  -> Just $ floor x
-                          False -> Nothing
+is_non_negative_int x = 
+  case is_equal (fromInteger . floor $ x) x of
+    True  -> Just $ floor x
+    False -> Nothing
 
 
 -- | helper function for defining real powers
@@ -64,7 +65,7 @@ is_non_negative_int x = case is_equal (fromInteger . floor $ x) x of
 foreign import ccall "math.h pow"
         c_pow :: CDouble -> CDouble -> CDouble
 
-real_exp :: Double -> Double -> Double
+real_exp :: Double -> Double -> Double 
 real_exp a x = realToFrac $ c_pow (realToFrac a) (realToFrac x)
 
 
