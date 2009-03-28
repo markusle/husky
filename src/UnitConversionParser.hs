@@ -82,8 +82,8 @@ parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 
 -- | parse for all acceptable conversion keywords
 conversion_keyword :: CharParser CalcState ()
-conversion_keyword = reserved "\\c" 
-                  <|> reserved "\\convert"
+conversion_keyword = reserved "conv" 
+                  <|> reserved "convert"
                   <?> "(c)onv keyword"
 
 

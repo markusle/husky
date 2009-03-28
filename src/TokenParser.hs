@@ -125,7 +125,7 @@ builtinFunctionsInt = [("fact", fact)]
 
 -- | all other keywords that are not regular functions
 keywords :: [String]
-keywords = ["\\convert","\\c"]
+keywords = ["convert","conv"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]
