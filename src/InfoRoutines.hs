@@ -31,6 +31,7 @@ module InfoRoutines ( confirm_and_exit
 import Data.Map
 import Data.Time
 import Prelude
+import System.IO
 import System.Locale
 
 
@@ -62,7 +63,8 @@ show_time = getCurrentTime
 
 -- | ask user for confirmation before exiting
 confirm_and_exit :: IO Bool
-confirm_and_exit = putStrLn "Really quit (y/n)? "
+confirm_and_exit = putStr "Really quit (y/n)? "
+                   >> hFlush stdout
                    >> getLine
                    >>= \answer -> case answer of 
                                    "y" -> return True
