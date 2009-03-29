@@ -32,6 +32,7 @@ import ExtraFunctions
 import Prelude
 import TokenParser
 
+--import Debug.Trace
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState ParseResult
@@ -104,9 +105,10 @@ exp_term = (whiteSpace *> factor) `chainl1` exp_action
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = try signed_parenthesis
+      <|> try parse_user_functions
       <|> parse_functions
-      <|> parse_functions_int
-      <|> try parse_number           -- need try because of possible
+      <|> parse_functions_int 
+      <|> try parse_single_number           -- need try because of possible
       <|> parse_variable             -- unitary -
       <?> "token or variable"         
 
@@ -126,7 +128,7 @@ parse_functions = msum $ extract_ops builtinFunctions
     extract_ops = foldr (\(x,y) acc -> 
                          ((reserved x *> execute y):acc)) [] 
     execute op  =  op <$> (  parens add_term 
-                         <|> parse_number
+                         <|> parse_single_number
                          <|> parse_variable )
                <?> "function parsing"
 
@@ -146,7 +148,7 @@ parse_functions_int = msum $ extract_ops_int builtinFunctionsInt
                              ((reserved x *> execute_int y):acc)) []
 
     execute_int op  =  fromInteger . op <$> (  parens add_term 
-                                           <|> parse_number 
+                                           <|> parse_single_number 
                                            <|> parse_variable 
                                                >>= evaluate_int )
 
@@ -173,10 +175,20 @@ exp_action :: CharParser CalcState (Double -> Double -> Double)
 exp_action = reservedOp "^" *> pure real_exp
 
 
--- | parse a number; integers are automatically promoted to double
+-- | parse a single number; integers are automatically promoted 
+-- to double
+-- NOTE: Due to the notFollowedBy this parser can not be used
+-- with 'many' and other parser combinators.
+parse_single_number :: CharParser CalcState Double
+parse_single_number = parse_number <* notFollowedBy alphaNum
+            <?> "signed single integer or double"
+
+
+-- | parse a number, can be used with 'many' and other parser
+-- combinators; integers are automatically promoted to double
 parse_number :: CharParser CalcState Double
 parse_number = converter <$> (parse_sign <* whiteSpace) <*> 
-               (naturalOrFloat <* notFollowedBy alphaNum)
+               naturalOrFloat 
             <?> "signed integer or double"
   where 
     converter sign val = case val of
@@ -218,20 +230,61 @@ functionString = many anyChar
 
 
 -- | parser for a function definition
+-- TODO: It might be a good idea to check the user defined
+-- function somewhat, e.g., do the parameters match etc
 define_function :: CharParser CalcState ParseResult
-define_function = (add_function 
-                    (whiteSpace *> reserved "function"
-                      *> whiteSpace *> variable <* whiteSpace)
-                    (many (variable <* whiteSpace))
-                    (whiteSpace *> reservedOp "="
-                      *> whiteSpace *> functionString))
+define_function = 
+  add_function (whiteSpace *> reserved "function" *> whiteSpace 
+                           *> variable <* whiteSpace)
+               (many (variable <* whiteSpace))
+               (whiteSpace *> reservedOp "=" *> whiteSpace 
+                           *> functionString)
   where
-    add_function :: CharParser CalcState String 
-                 -> CharParser CalcState [String] 
-                 -> CharParser CalcState String 
-                 -> CharParser CalcState ParseResult
     add_function name_parser var_parser expr_parser = name_parser
       >>= \name -> var_parser 
       >>= \vars -> expr_parser
       >>= \expr -> updateState (insert_function vars expr name)
       >> return (StrResult "<function>")
+
+
+-- | parse available user function; the way we deal with user
+-- functions for now goes like this:
+--  1) Check if a user function of the given name exists
+--  2) If yes, check if the user supplied the proper number of
+--     arguments (for now we only allow literals, not variables)
+--  3) If yes, replace the variables by the literals in the function
+--     string.
+--  4) Insert the so manipulated and parenthesized function 
+--     expression into the current parser and parse it
+parse_user_functions :: CharParser CalcState Double 
+parse_user_functions = 
+  substitute_function (whiteSpace *> variable)
+               (many (whiteSpace *> parse_number)) 
+
+  where
+    substitute_function name_parser var_parser = name_parser
+      >>= get_function_expression
+      >>= \(Function { f_vars = target_vars
+                     , f_expression = expr } ) -> var_parser
+      >>= \vars -> check_var_num vars target_vars
+      >> getInput
+      >>= \inp  -> setInput ("(" ++ expr ++ ")" ++ inp)
+      >> signed_parenthesis
+
+    -- | retrieve the function expression corresponding to a
+    -- particular function name
+    get_function_expression name = getState
+      >>= \(CalcState { funcMap = myMap }) -> 
+          case M.lookup name myMap of
+            Nothing -> pzero
+            Just a  -> return a
+
+    -- | check if the number of expected and provided arguments
+    -- match
+    check_var_num v target_v = if length v == length target_v
+                              then return () 
+                              else pzero
+    
+
+
+

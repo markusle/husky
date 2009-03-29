@@ -41,6 +41,7 @@ data Function = Function
                   f_vars :: [String]
                 , f_expression :: String
                 }
+              deriving(Show)
 
 
 -- | this data structure provides some state information

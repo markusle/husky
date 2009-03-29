@@ -96,7 +96,7 @@ parse_it state = do
                   DblResult d      -> husky_result $ (show d):[""]
                   UnitResult (v,u) -> husky_result $ (show v):[u]
                   ErrResult err    -> (putStrLn $ "Error: " ++ err)
-                  StrResult str    -> putStrLn str
+                  StrResult str    -> husky_result $ str:[""]
 
                  >> parse_it newState
 
