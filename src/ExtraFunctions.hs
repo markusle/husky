@@ -73,7 +73,3 @@ real_exp a x = realToFrac $ c_pow (realToFrac a) (realToFrac x)
 fact :: Integer -> Integer
 fact 0 = 1
 fact n = n * fact (n-1)
-
-
--- | prime returns all prime numbers up to N
--- prime :: 

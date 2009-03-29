@@ -22,12 +22,14 @@
 -- before any parsing is done, aka info routines of any sort and
 -- shape
 module InfoRoutines ( confirm_and_exit
+                    , list_functions
                     , list_variables 
                     , show_time
                     ) where
 
 
 -- imports
+import Data.List
 import Data.Map
 import Data.Time
 import Prelude
@@ -41,11 +43,25 @@ import CalculatorState
  
 -- | list all currently defined variables
 list_variables :: CalcState -> IO ()
-list_variables (CalcState { varMap = theMap }) = 
+list_variables (CalcState {varMap = theMap}) = 
   mapM_ print_variable (assocs theMap) 
 
     where
-      print_variable x = putStrLn (fst x ++ " == " ++ (show $ snd x)) 
+      print_variable (x,y) = putStrLn (x ++ " == " ++ (show y)) 
+
+
+-- | list all currently defined functions
+list_functions :: CalcState -> IO ()
+list_functions (CalcState {funcMap = theMap} ) = 
+  mapM_ print_function (assocs theMap)
+
+    where
+      print_function ( x
+                     , (Function { f_vars = vars 
+                                 , f_expression = expr } 
+                       )
+                     ) =
+        putStrLn (x ++ " " ++ intercalate [' '] vars ++ " = " ++ expr)
 
 
 -- | display the current localtime

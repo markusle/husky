@@ -62,6 +62,9 @@ parse_it state = do
     Just "\\v" -> list_variables state      -- list all defined 
                   >> parse_it state         -- variables
 
+    Just "\\f" -> list_functions state      -- list all defined
+                  >> parse_it state         -- functions
+
     Just "\\t" -> show_time                 -- show current time
                   >> parse_it state
 

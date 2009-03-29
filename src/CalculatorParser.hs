@@ -53,9 +53,11 @@ parse_statements = (head . reverse) <$> individual_statement
 -- | parse an individual statement, i.e. either a computation
 -- , a function definition, or a variable definition
 individual_statement :: CharParser CalcState ParseResult
-individual_statement = try (DblResult <$> define_variable) 
+individual_statement = try define_function
+                    <|> try (DblResult <$> define_variable) 
                     <|> (DblResult <$> add_term) 
                     <?> "expression or variable definition"
+
 
 
 -- | if the line starts off with a string we either
@@ -208,3 +210,28 @@ get_variable_value name_parser = getState
 -- | this is how valid variable names have to look like
 variable :: CharParser CalcState String
 variable = (:) <$> letter <*> many alphaNum
+
+
+-- | this is how valid function Strings have to look like
+functionString :: CharParser CalcState String
+functionString = many anyChar
+
+
+-- | parser for a function definition
+define_function :: CharParser CalcState ParseResult
+define_function = (add_function 
+                    (whiteSpace *> reserved "function"
+                      *> whiteSpace *> variable <* whiteSpace)
+                    (many (variable <* whiteSpace))
+                    (whiteSpace *> reservedOp "="
+                      *> whiteSpace *> functionString))
+  where
+    add_function :: CharParser CalcState String 
+                 -> CharParser CalcState [String] 
+                 -> CharParser CalcState String 
+                 -> CharParser CalcState ParseResult
+    add_function name_parser var_parser expr_parser = name_parser
+      >>= \name -> var_parser 
+      >>= \vars -> expr_parser
+      >>= \expr -> updateState (insert_function vars expr name)
+      >> return (StrResult "<function>")

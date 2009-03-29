@@ -23,8 +23,8 @@ module TokenParser ( module Control.Applicative
                    , module Text.ParserCombinators.Parsec
                    , builtinFunctions
                    , builtinFunctionsInt
+                   , charLiteral
                    , float
-                   , identifier
                    , integer
                    , parens
                    , keywords
@@ -121,7 +121,7 @@ builtinFunctionsInt = [("fact", fact)]
 
 -- | all other keywords that are not regular functions
 keywords :: [String]
-keywords = ["convert","conv"]
+keywords = ["convert","conv","function","end"]
 
 operators :: [String]
 operators = ["*","/","+","-","="]
@@ -155,8 +155,8 @@ stringLiteral = PT.stringLiteral lexer
 
 
 -- | token parser for Char
-identifier :: CharParser st String
-identifier = PT.stringLiteral lexer
+charLiteral :: CharParser st Char
+charLiteral = PT.charLiteral lexer
 
 
 -- | token parser for Double

@@ -23,6 +23,8 @@
 -- in their separate modules
 module CalculatorState ( CalcState(..)
                        , defaultCalcState 
+                       , Function(..)
+                       , insert_function
                        , insert_variable
                        ) where
 
@@ -30,6 +32,15 @@ module CalculatorState ( CalcState(..)
 -- imports
 import qualified Data.Map as M
 import Prelude
+
+
+-- | this data structure holds information for user defined
+-- functions
+data Function = Function 
+                {
+                  f_vars :: [String]
+                , f_expression :: String
+                }
 
 
 -- | this data structure provides some state information
@@ -43,6 +54,7 @@ import Prelude
 data CalcState = CalcState 
     { 
       varMap   :: M.Map String Double   
+    , funcMap  :: M.Map String Function  
     }
 
 
@@ -50,13 +62,25 @@ defaultCalcState :: CalcState
 defaultCalcState = CalcState 
     { 
       varMap   = M.fromList constantList 
+    , funcMap  = M.empty
     }
 
 
--- | function adding a new variable to the database
+-- | function adding a new variable into the calculator state
+-- database
 insert_variable :: Double -> String -> CalcState -> CalcState
-insert_variable num name state@(CalcState { varMap = theMap }) =
+insert_variable num name state@(CalcState {varMap = theMap}) =
     state { varMap = M.insert name num theMap } 
+
+
+-- | insert a user definied function into the calculator state
+-- database
+insert_function :: [String] -> String -> String -> CalcState 
+                -> CalcState
+insert_function vars expr name state@(CalcState {funcMap = theMap}) =
+    state { funcMap = M.insert name theFunc theMap }
+  where
+    theFunc = Function { f_vars = vars, f_expression = expr } 
 
 
 -- | provide a few useful mathematical constants that we
