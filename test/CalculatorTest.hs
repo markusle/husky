@@ -62,8 +62,12 @@ main = do
                 failingTests
   status4 <- examine_output failing
 
+  putStr $ color_string Cyan "\nUser defined function tests:\n"
+  let userFuncs = execWriter $ good_test_driver defaultCalcState 
+                  userFunctionTests
+  status5 <- examine_output userFuncs
 
-  let status = status1 && status2 && status3 && status4
+  let status = status1 && status2 && status3 && status4 && status5
   if status == True then
       exitWith ExitSuccess
     else
@@ -110,22 +114,38 @@ good_test_driver state (x:xs) = do
   let expected = snd x
   case runParser main_parser state "" tok of
     Left er -> tell [TestResult False tok (show expected) (show er)]
-    Right (DblResult result, newState) -> examine_result expected result tok
+    Right (result, newState) -> examine_result expected result tok
         
       where
-        -- NOTE: when we compare target and actual result we
-        -- probably need to be more careful and can't use ==
-        -- if we are dealing with Doubles!!!
-        examine_result :: Double -> Double -> String 
+        -- for comparing doubles we use is_equal otherwise we
+        -- go with good old ==
+        examine_result :: ParseResult -> ParseResult -> String 
                        -> Writer [TestResult] ()
-        examine_result target actual tok = 
+        examine_result (DblResult target) (DblResult actual) tok = 
           if (is_equal target actual) 
-            then do
+             then success target actual
+             else failure target actual
+
+        examine_result target actual tok = 
+          if target == actual 
+             then success target actual
+             else failure target actual
+        
+
+       {-     then do
               tell [TestResult True tok (show target) (show actual)]
               good_test_driver newState xs
             else do
               tell [TestResult False tok (show target) (show actual)]
-              good_test_driver newState xs
+              good_test_driver newState xs -}
+
+        success target actual = do
+          tell [TestResult True tok (show target) (show actual)]
+          good_test_driver newState xs
+
+        failure target actual = do
+          tell [TestResult False tok (show target) (show actual)]
+          good_test_driver newState xs 
 
 
 -- | main test routine for "failing tests"
@@ -156,7 +176,7 @@ defaultResult = TestResult False "" "" ""
 
 -- | a good test case consists of an expression and an
 -- expected result
-type GoodTestCase  = (String, Double)
+type GoodTestCase  = (String, ParseResult)
 
 
 -- | a failing test case currently consists only of an
@@ -190,106 +210,108 @@ simpleTests = [ simpleTest1, simpleTest2, simpleTest3, simpleTest4
 
 -- list of simple tests
 simpleTest1 :: GoodTestCase
-simpleTest1 = ("3+4", 7.0)
+simpleTest1 = ("3+4", DblResult 7.0)
 
 simpleTest2 :: GoodTestCase
-simpleTest2 = ("3*3", 9.0)
+simpleTest2 = ("3*3", DblResult 9.0)
 
 simpleTest3 :: GoodTestCase
-simpleTest3 = ("(3*3)+(3*4)", 21.0)
+simpleTest3 = ("(3*3)+(3*4)", DblResult 21.0)
 
 simpleTest4 :: GoodTestCase
-simpleTest4 = ("(3.0*3.0)+(3.0*4.0)", 21.0)
+simpleTest4 = ("(3.0*3.0)+(3.0*4.0)", DblResult 21.0)
 
 simpleTest5 :: GoodTestCase
-simpleTest5 = ("(3+3)*(9+8)", 102.0)
+simpleTest5 = ("(3+3)*(9+8)", DblResult 102.0)
 
 simpleTest6 :: GoodTestCase
-simpleTest6 = ("(3.0+3.0)*(9.0+8.0)", 102.0)
+simpleTest6 = ("(3.0+3.0)*(9.0+8.0)", DblResult 102.0)
 
 simpleTest7 :: GoodTestCase
-simpleTest7 = ("(((((((3.0+3.0)*(9.0+8.0)))))))", 102.0)
+simpleTest7 = ("(((((((3.0+3.0)*(9.0+8.0)))))))", DblResult 102.0)
 
 simpleTest8 :: GoodTestCase
-simpleTest8 = ("(((((((3.0+3.0)))))*(((((9.0+8.0)))))))", 102.0)
+simpleTest8 = ("(((((((3.0+3.0)))))*(((((9.0+8.0)))))))"
+              , DblResult 102.0)
 
 simpleTest9 :: GoodTestCase
-simpleTest9 = ("3+3*99.0", 300.0)
+simpleTest9 = ("3+3*99.0", DblResult 300.0)
 
 simpleTest10 :: GoodTestCase
-simpleTest10 = ("3+3*8+4*3*2+1*4*3+5", 68.0)
+simpleTest10 = ("3+3*8+4*3*2+1*4*3+5", DblResult 68.0)
 
 simpleTest11 :: GoodTestCase
-simpleTest11 = ("(3+3)*(8+4)*3*(2+1)*4*(3+5)", 20736.0)
+simpleTest11 = ("(3+3)*(8+4)*3*(2+1)*4*(3+5)", DblResult 20736.0)
 
 simpleTest12 :: GoodTestCase
-simpleTest12 = (" 3  +3*     99.0", 300.0)
+simpleTest12 = (" 3  +3*     99.0", DblResult 300.0)
 
 simpleTest13 :: GoodTestCase
-simpleTest13 = (" 3  + 3*8+4  *3 *2+1*  4*3+5  ", 68.0)
+simpleTest13 = (" 3  + 3*8+4  *3 *2+1*  4*3+5  ", DblResult 68.0)
 
 simpleTest14 :: GoodTestCase
-simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)", 20736.0)
+simpleTest14 = ("(3+3)   *(8+4)*3 *  (2+1 )*4*( 3+5)"
+               , DblResult 20736.0)
 
 simpleTest15 :: GoodTestCase
-simpleTest15 = ("3*-4", -12.0)
+simpleTest15 = ("3*-4", DblResult (-12.0))
 
 simpleTest16 :: GoodTestCase
-simpleTest16 = ("3* -4", -12.0)
+simpleTest16 = ("3* -4", DblResult (-12.0))
 
 simpleTest17 :: GoodTestCase
-simpleTest17 = ("-3*4", -12.0)
+simpleTest17 = ("-3*4", DblResult (-12.0))
 
 simpleTest18 :: GoodTestCase
-simpleTest18 = ("-3*-4", 12.0)
+simpleTest18 = ("-3*-4", DblResult 12.0)
 
 simpleTest19 :: GoodTestCase
-simpleTest19 = ("3*(-4)", -12.0)
+simpleTest19 = ("3*(-4)", DblResult (-12.0))
 
 simpleTest20 :: GoodTestCase
-simpleTest20 = ("(-3)*(-4)", 12.0)
+simpleTest20 = ("(-3)*(-4)", DblResult 12.0)
 
 simpleTest21 :: GoodTestCase
-simpleTest21 = ("3/-4", -0.75)
+simpleTest21 = ("3/-4", DblResult (-0.75))
 
 simpleTest22 :: GoodTestCase
-simpleTest22 = ("3^-4", 1/81)
+simpleTest22 = ("3^-4", DblResult (1/81))
 
 simpleTest23 :: GoodTestCase
-simpleTest23 = ("-3*-4^-4", -3/256)
+simpleTest23 = ("-3*-4^-4", DblResult (-3/256))
 
 simpleTest24 :: GoodTestCase
-simpleTest24 = ("-3+-4", -7)
+simpleTest24 = ("-3+-4", DblResult (-7))
 
 simpleTest25 :: GoodTestCase
-simpleTest25 = ("-1/-1/-1/-1", 1.0)
+simpleTest25 = ("-1/-1/-1/-1", DblResult 1.0)
 
 simpleTest26 :: GoodTestCase
-simpleTest26 = ("-(-(-1))", -1)
+simpleTest26 = ("-(-(-1))", DblResult (-1))
 
 simpleTest27 :: GoodTestCase
-simpleTest27 = ("3/-4; -1/-1/-1/-1; -3*-4^-4", -3/256)
+simpleTest27 = ("3/-4; -1/-1/-1/-1; -3*-4^-4", DblResult (-3/256))
 
 simpleTest28 :: GoodTestCase
-simpleTest28 = ("3*3; 4+5; 34 * 34   ; 3^-4", 1/81)
+simpleTest28 = ("3*3; 4+5; 34 * 34   ; 3^-4", DblResult (1/81))
 
 simpleTest29 :: GoodTestCase
-simpleTest29 = ("3*3;4*4;-3*-4^-4", -3/256)
+simpleTest29 = ("3*3;4*4;-3*-4^-4", DblResult (-3/256))
 
 simpleTest30 :: GoodTestCase
-simpleTest30 = ("  3; 3+4; 4*2   ; -3+-4", -7)
+simpleTest30 = ("  3; 3+4; 4*2   ; -3+-4", DblResult (-7))
 
 simpleTest31 :: GoodTestCase
-simpleTest31 = ("3*1;3;3;3;3  ;-1/-1/-1/-1", 1.0)
+simpleTest31 = ("3*1;3;3;3;3  ;-1/-1/-1/-1", DblResult 1.0)
 
 simpleTest32 :: GoodTestCase
-simpleTest32 = ("4^4;-(-(-1))", -1)
+simpleTest32 = ("4^4;-(-(-1))", DblResult (-1))
 
 simpleTest33 :: GoodTestCase
-simpleTest33 = ("-3", -3)
+simpleTest33 = ("-3", DblResult (-3))
 
 simpleTest34 :: GoodTestCase
-simpleTest34 = (" -    9  ", -9)
+simpleTest34 = (" -   9  ", DblResult (-9))
 
 
 -- a few tests involving variables
@@ -304,64 +326,64 @@ variableTests = [ variableTest1, variableTest2, variableTest3
 
 -- list of variable tests
 variableTest1 :: GoodTestCase
-variableTest1 = ("b = 4", 4)
+variableTest1 = ("b = 4", DblResult 4)
 
 variableTest2 :: GoodTestCase
-variableTest2 = ("3 * b ", 12)
+variableTest2 = ("3 * b ", DblResult 12)
 
 variableTest3 :: GoodTestCase
-variableTest3 = ("(b*b)", 16)
+variableTest3 = ("(b*b)", DblResult 16)
 
 variableTest4 :: GoodTestCase
-variableTest4 = ("a = 12", 12)
+variableTest4 = ("a = 12", DblResult 12)
 
 variableTest5 :: GoodTestCase
-variableTest5 = ("a * b", 48)
+variableTest5 = ("a * b", DblResult 48)
 
 variableTest6 :: GoodTestCase
-variableTest6 = ("a - b * b", (-4))
+variableTest6 = ("a - b * b", DblResult (-4))
 
 variableTest7 :: GoodTestCase
-variableTest7 = ("3 * b - a", 0)
+variableTest7 = ("3 * b - a", DblResult 0)
 
 variableTest8 :: GoodTestCase
-variableTest8 = ("kjhdskfsd123hjksdf = a * b", 48)
+variableTest8 = ("kjhdskfsd123hjksdf = a * b", DblResult 48)
 
 variableTest9 :: GoodTestCase
-variableTest9 = ("(a*b) - kjhdskfsd123hjksdf", 0)
+variableTest9 = ("(a*b) - kjhdskfsd123hjksdf", DblResult 0)
 
 variableTest10 :: GoodTestCase
-variableTest10 = ("c = 2", 2) 
+variableTest10 = ("c = 2", DblResult 2) 
 
 variableTest11 :: GoodTestCase
-variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", 168)
+variableTest11 = ("a-b-c + ( a + b + c ) + (a*a)", DblResult 168)
 
 variableTest12 :: GoodTestCase
-variableTest12 = ("b^a - c", 16777214)
+variableTest12 = ("b^a - c", DblResult 16777214)
 
 variableTest13 :: GoodTestCase
-variableTest13 = ("a=3; b=4; c=a/b; c*b", 3)
+variableTest13 = ("a=3; b=4; c=a/b; c*b", DblResult 3)
 
 variableTest14 :: GoodTestCase
-variableTest14 = ("x=   10; y = log(x); exp(y)", 10)
+variableTest14 = ("x=   10; y = log(x); exp(y)", DblResult 10)
 
 variableTest15 :: GoodTestCase
-variableTest15 = ("x=5; x=6; x=7; 3*x; y = x*3", 21)
+variableTest15 = ("x=5; x=6; x=7; 3*x; y = x*3", DblResult 21)
 
 variableTest16 :: GoodTestCase
-variableTest16 = ("x = 2; y = 10^x; log10(y)", 2)
+variableTest16 = ("x = 2; y = 10^x; log10(y)", DblResult 2)
 
 variableTest17 :: GoodTestCase
-variableTest17 = ("c = 2; d = c; d", 2) 
+variableTest17 = ("c = 2; d = c; d", DblResult 2) 
 
 variableTest18 :: GoodTestCase
-variableTest18 = (" x = pi; y = cos(x); acos(y)", pi)
+variableTest18 = (" x = pi; y = cos(x); acos(y)", DblResult pi)
 
 variableTest19 :: GoodTestCase
-variableTest19 = ("a = 5; -a", -5.0) 
+variableTest19 = ("a = 5; -a", DblResult (-5.0)) 
 
 variableTest20 :: GoodTestCase
-variableTest20 = ("b= 15; 3*( - b)", -45)
+variableTest20 = ("b= 15; 3*( - b)", DblResult (-45))
 
 
 
@@ -375,37 +397,37 @@ functionTests = [ functionTest1, functionTest2, functionTest3
 
 -- list of variable tests
 functionTest1 :: GoodTestCase
-functionTest1 = ("sqrt 2", 1.4142135623730951)
+functionTest1 = ("sqrt 2", DblResult 1.4142135623730951)
 
 functionTest2 :: GoodTestCase
-functionTest2 = ("sqrt 2 * 2", 2.8284271247461903)
+functionTest2 = ("sqrt 2 * 2", DblResult 2.8284271247461903)
 
 functionTest3 :: GoodTestCase
-functionTest3 = ("sqrt 2*2", 2.8284271247461903)
+functionTest3 = ("sqrt 2*2", DblResult 2.8284271247461903)
 
 functionTest4 :: GoodTestCase
-functionTest4 = ("sqrt(2*2)", 2)
+functionTest4 = ("sqrt(2*2)", DblResult 2)
 
 functionTest5 :: GoodTestCase
-functionTest5 = ("cos 0.5", 0.8775825618903728)
+functionTest5 = ("cos 0.5", DblResult 0.8775825618903728)
 
 functionTest6 :: GoodTestCase
-functionTest6 = ("cos 0.5 +0.5", 1.3775825618903728)
+functionTest6 = ("cos 0.5 +0.5", DblResult 1.3775825618903728)
 
 functionTest7 :: GoodTestCase
-functionTest7 = ("cos 0.5 - 0.5", 0.37758256189037276)
+functionTest7 = ("cos 0.5 - 0.5", DblResult 0.37758256189037276)
 
 functionTest8 :: GoodTestCase
-functionTest8 = ("cos(0.5 -0.5)", 1.0)
+functionTest8 = ("cos(0.5 -0.5)", DblResult 1.0)
 
 functionTest9 :: GoodTestCase
-functionTest9 = ("cos -0.5", 0.8775825618903728)
+functionTest9 = ("cos -0.5", DblResult 0.8775825618903728)
 
 functionTest10 :: GoodTestCase
-functionTest10 = ("cos(-0.5)", 0.8775825618903728) 
+functionTest10 = ("cos(-0.5)", DblResult 0.8775825618903728) 
 
 functionTest11 :: GoodTestCase
-functionTest11 = ("cos 0.5 - cos -0.5", 0)
+functionTest11 = ("cos 0.5 - cos -0.5", DblResult 0)
 
 
 -- a few tests that are failing 
@@ -461,4 +483,51 @@ failingTest14 = ("(3+3;4+4)")
 
 failingTest15 :: FailingTestCase
 failingTest15 = ("3+3, 3+3")
+
+
+-- a few tests for testing proper parsing of user defined
+-- functions
+userFunctionTests :: [GoodTestCase]
+userFunctionTests = [ userFunctionTest1, userFunctionTest2
+                    , userFunctionTest3, userFunctionTest4 
+                    , userFunctionTest5, userFunctionTest6
+                    , userFunctionTest7, userFunctionTest8
+                    , userFunctionTest9, userFunctionTest10
+                    , userFunctionTest11] 
+
+-- list of user defined function tests
+userFunctionTest1 :: GoodTestCase
+userFunctionTest1 = ("function f x y = x * y", StrResult "<function>")
+
+userFunctionTest2 :: GoodTestCase
+userFunctionTest2 = ("f 5 6", DblResult 30)
+
+userFunctionTest3 :: GoodTestCase
+userFunctionTest3 = ("x=2.0; y = 3.0", DblResult 3.0)
+
+userFunctionTest4 :: GoodTestCase
+userFunctionTest4 = ("x * f 5 6 + f 5 6 + y", DblResult 93)
+
+userFunctionTest5 :: GoodTestCase
+userFunctionTest5 = ("f 5 6 ^ 2", DblResult 900)
+
+userFunctionTest6 :: GoodTestCase
+userFunctionTest6 = ("function g a b c = a * b + c"
+                    , StrResult "<function>")
+
+userFunctionTest7 :: GoodTestCase
+userFunctionTest7 = ("a = 100; b = 77; c = 300; g 1 2 3"
+                    , DblResult 5)
+
+userFunctionTest8 :: GoodTestCase
+userFunctionTest8 = ("a * b + c", DblResult 8000)
+
+userFunctionTest9 :: GoodTestCase
+userFunctionTest9 = ("f 5 6 * g 1 2 3", DblResult 150)
+
+userFunctionTest10 :: GoodTestCase
+userFunctionTest10 = ("sqrt( f 5 6 )", DblResult 5.477225575051661)
+
+userFunctionTest11 :: GoodTestCase
+userFunctionTest11 = ("f 5 6 + g 1 2 3 + (f 1 2) - 37", DblResult 0)
 
