@@ -108,8 +108,11 @@ factor = try signed_parenthesis
       <|> try parse_user_functions
       <|> parse_functions
       <|> parse_functions_int 
-      <|> try parse_single_number           -- need try because of possible
-      <|> parse_variable             -- unitary -
+      <|> try parse_single_number  -- need try because of possible
+                                   -- unitary '-'
+      <|> try parse_stack          -- always parse stack first since
+                                   -- local variables hide global ones
+      <|> parse_variable           
       <?> "token or variable"         
 
 
@@ -224,6 +227,24 @@ variable :: CharParser CalcState String
 variable = (:) <$> letter <*> many alphaNum
 
 
+-- | look for the value of a given stack variable
+parse_stack :: CharParser CalcState Double
+parse_stack = (*) <$> (parse_sign <* whiteSpace) <*>
+                 (get_stack_variable variable <* whiteSpace)
+              <?> "variable"
+
+
+-- | function retrieving a variable from the database if
+-- present 
+get_stack_variable :: CharParser CalcState String 
+                   -> CharParser CalcState Double
+get_stack_variable name_parser = getState 
+  >>= \(CalcState { funcStack = stack }) -> name_parser
+  >>= \name -> case M.lookup name stack of
+                 Nothing -> pzero
+                 Just a  -> return a
+                            
+
 -- | this is how valid function Strings have to look like
 functionString :: CharParser CalcState String
 functionString = many anyChar
@@ -266,11 +287,13 @@ parse_user_functions =
       >>= get_function_expression
       >>= \(Function { f_vars = target_vars
                      , f_expression = expr } ) -> var_parser
-      >>= \vars -> check_var_num vars target_vars
+      >>= \vars -> push_vars_to_stack vars target_vars
       >> getInput
       >>= \inp  -> setInput ("(" ++ expr ++ ")" ++ inp)
       >> signed_parenthesis
-
+      >>= \result -> updateState clear_stack
+      >> return result
+                     
     -- | retrieve the function expression corresponding to a
     -- particular function name
     get_function_expression name = getState
@@ -280,10 +303,14 @@ parse_user_functions =
             Just a  -> return a
 
     -- | check if the number of expected and provided arguments
-    -- match
-    check_var_num v target_v = if length v == length target_v
-                              then return () 
-                              else pzero
+    -- match and push the variables on the local stack so the
+    -- parser can replace the parameters while parsing 
+    push_vars_to_stack vars target_vars = 
+        if length vars /= length target_vars
+          then pzero
+          else mapM_ (updateState . push_to_stack) (zip target_vars vars)
+
+               
     
 
 

@@ -22,10 +22,12 @@
 -- the calculator. Eventually, these might all find a home
 -- in their separate modules
 module CalculatorState ( CalcState(..)
+                       , clear_stack
                        , defaultCalcState 
                        , Function(..)
                        , insert_function
                        , insert_variable
+                       , push_to_stack
                        ) where
 
 
@@ -54,17 +56,32 @@ data Function = Function
 -- errValue : [String] holding all special error messages
 data CalcState = CalcState 
     { 
-      varMap   :: M.Map String Double   
-    , funcMap  :: M.Map String Function  
+      varMap    :: M.Map String Double   
+    , funcMap   :: M.Map String Function  
+    , funcStack :: M.Map String Double   -- local stack for passing
+                                         -- function parameters
     }
 
 
 defaultCalcState :: CalcState
 defaultCalcState = CalcState 
     { 
-      varMap   = M.fromList constantList 
-    , funcMap  = M.empty
+      varMap    = M.fromList constantList 
+    , funcMap   = M.empty
+    , funcStack = M.empty
     }
+
+
+
+-- | function pushing a variable on the stack
+push_to_stack :: (String,Double) -> CalcState -> CalcState
+push_to_stack (name,val) state@(CalcState {funcStack = stack}) =
+    state { funcStack = M.insert name val stack }
+
+
+-- | function for clearing the stack
+clear_stack :: CalcState -> CalcState
+clear_stack state = state { funcStack = M.empty }
 
 
 -- | function adding a new variable into the calculator state
