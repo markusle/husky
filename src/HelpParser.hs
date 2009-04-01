@@ -74,6 +74,21 @@ about_info = string "about"
           <?> "about info"
 
 
+-- | return info about available commands
+command_info :: CharParser CalcState String
+command_info = string "commands" *> pure commandString
+            <?> "command info"
+
+
+-- | currently available commands
+commandString :: String
+commandString = (color_string Yellow $ "Available commands:\n")
+                ++ "\\q    - quit\n"
+                ++ "\\t    - show current date and time\n"
+                ++ "\\v    - list currently defined variables\n"
+                ++ "\\f    - list currently defined functions\n"
+
+
 -- | return all currently available help options
 help_info :: String
 help_info = (color_string Yellow $ "Available help options"
@@ -87,6 +102,7 @@ help_info = (color_string Yellow $ "Available help options"
 -- together with a parser for that particular help option
 helpOptions :: [(String, CharParser CalcState String)]
 helpOptions = [ ("about                  - about husky", about_info)
-              , ("units [:: <unit type>] - list available unit "
+              , ("commands               - list commands", command_info)
+              , ("conversion [:: <type>] - list available unit "
                  ++ "conversions", unit_info) 
               ]
