@@ -308,7 +308,7 @@ parse_user_functions =
       >>= \vars -> push_vars_to_stack vars target_vars
       >> getInput
       >>= \inp  -> setInput ("(" ++ expr ++ ")" ++ inp)
-      >> signed_parenthesis
+      >> parens add_term 
       >>= \result -> updateState clear_stack
       >> return result
  
