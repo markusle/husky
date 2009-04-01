@@ -61,7 +61,7 @@ list_functions (CalcState {funcMap = theMap} ) =
                                  , f_expression = expr } 
                        )
                      ) =
-        putStrLn (x ++ " " ++ intercalate [' '] vars ++ " = " ++ expr)
+        putStrLn (x ++ "(" ++ intercalate [','] vars ++ ") = " ++ expr)
 
 
 -- | display the current localtime

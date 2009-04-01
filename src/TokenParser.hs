@@ -23,6 +23,7 @@ module TokenParser ( module Control.Applicative
                    , module Text.ParserCombinators.Parsec
                    , builtinFunctions
                    , builtinFunctionsInt
+                   , comma
                    , charLiteral
                    , float
                    , integer
@@ -186,4 +187,7 @@ semi :: CharParser st String
 semi = PT.semi lexer
 
 
+-- | token parser for comma
+comma :: CharParser st String
+comma = PT.comma lexer
 

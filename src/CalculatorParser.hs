@@ -254,18 +254,26 @@ functionString = many anyChar
 -- TODO: It might be a good idea to check the user defined
 -- function somewhat, e.g., do the parameters match etc
 define_function :: CharParser CalcState ParseResult
-define_function = 
-  add_function (whiteSpace *> reserved "function" *> whiteSpace 
-                           *> variable <* whiteSpace)
-               (many (variable <* whiteSpace))
-               (whiteSpace *> reservedOp "=" *> whiteSpace 
-                           *> functionString)
+define_function = add_function parse_function_name parse_vars 
+                  parse_function_def
+              
   where
     add_function name_parser var_parser expr_parser = name_parser
       >>= \name -> var_parser 
       >>= \vars -> expr_parser
       >>= \expr -> updateState (insert_function vars expr name)
-      >> return (StrResult "<function>")
+      >> return (StrResult "<function>") 
+    
+    parse_function_name = (whiteSpace *> reserved "function" 
+                           *> whiteSpace *> variable <* whiteSpace)
+
+    -- | we allow both f(x,y) and haskell style f x y function 
+    -- definitions
+    parse_vars = (parens ((variable <* whiteSpace) `sepBy` comma))
+              <|> many (variable <* whiteSpace)
+
+    parse_function_def = (whiteSpace *> reservedOp "=" *> whiteSpace 
+                          *> functionString)
 
 
 -- | parse available user function; the way we deal with user
@@ -279,10 +287,20 @@ define_function =
 --     expression into the current parser and parse it
 parse_user_functions :: CharParser CalcState Double 
 parse_user_functions = 
-  substitute_function (whiteSpace *> variable)
-               (many (whiteSpace *> parse_number)) 
+  substitute_function parse_function_name parse_arguments
 
   where
+    -- | arguments can either be applied via f(x,y) or the haskell
+    -- way f x y
+    parse_arguments = parens ((parse_number <* whiteSpace) `sepBy` 
+                              comma) 
+                   <|> many (parse_number <* whiteSpace)
+
+    parse_function_name = (whiteSpace *> variable <* whiteSpace)
+
+
+    -- | substitute a function expression into the current parse
+    -- string
     substitute_function name_parser var_parser = name_parser
       >>= get_function_expression
       >>= \(Function { f_vars = target_vars
@@ -293,7 +311,8 @@ parse_user_functions =
       >> signed_parenthesis
       >>= \result -> updateState clear_stack
       >> return result
-                     
+ 
+                    
     -- | retrieve the function expression corresponding to a
     -- particular function name
     get_function_expression name = getState
@@ -308,7 +327,8 @@ parse_user_functions =
     push_vars_to_stack vars target_vars = 
         if length vars /= length target_vars
           then pzero
-          else mapM_ (updateState . push_to_stack) (zip target_vars vars)
+          else mapM_ (updateState . push_to_stack) 
+                     (zip target_vars vars)
 
                
     

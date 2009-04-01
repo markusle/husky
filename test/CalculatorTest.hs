@@ -493,41 +493,81 @@ userFunctionTests = [ userFunctionTest1, userFunctionTest2
                     , userFunctionTest5, userFunctionTest6
                     , userFunctionTest7, userFunctionTest8
                     , userFunctionTest9, userFunctionTest10
-                    , userFunctionTest11] 
+                    , userFunctionTest11, userFunctionTest12 
+                    , userFunctionTest13, userFunctionTest14
+                    , userFunctionTest15, userFunctionTest16
+                    , userFunctionTest17, userFunctionTest18
+                    , userFunctionTest19, userFunctionTest20
+                    , userFunctionTest21, userFunctionTest22] 
 
 -- list of user defined function tests
 userFunctionTest1 :: GoodTestCase
-userFunctionTest1 = ("function f x y = x * y", StrResult "<function>")
+userFunctionTest1 = ("function f(x , y )= x * y", StrResult "<function>")
 
 userFunctionTest2 :: GoodTestCase
-userFunctionTest2 = ("f 5 6", DblResult 30)
+userFunctionTest2 = ("f ( 5, 6)", DblResult 30)
 
 userFunctionTest3 :: GoodTestCase
 userFunctionTest3 = ("x=2.0; y = 3.0", DblResult 3.0)
 
 userFunctionTest4 :: GoodTestCase
-userFunctionTest4 = ("x * f 5 6 + f 5 6 + y", DblResult 93)
+userFunctionTest4 = ("x * f( 5, 6)+ f(5,6) + y", DblResult 93)
 
 userFunctionTest5 :: GoodTestCase
-userFunctionTest5 = ("f 5 6 ^ 2", DblResult 900)
+userFunctionTest5 = ("f(5,6) ^ 2", DblResult 900)
 
 userFunctionTest6 :: GoodTestCase
-userFunctionTest6 = ("function g a b c = a * b + c"
+userFunctionTest6 = ("function g(a, b, c) = a * b + c"
                     , StrResult "<function>")
 
 userFunctionTest7 :: GoodTestCase
-userFunctionTest7 = ("a = 100; b = 77; c = 300; g 1 2 3"
+userFunctionTest7 = ("a = 100; b = 77; c = 300; g( 1, 2, 3)"
                     , DblResult 5)
 
 userFunctionTest8 :: GoodTestCase
 userFunctionTest8 = ("a * b + c", DblResult 8000)
 
 userFunctionTest9 :: GoodTestCase
-userFunctionTest9 = ("f 5 6 * g 1 2 3", DblResult 150)
+userFunctionTest9 = ("f( 5, 6) * g( 1, 2, 3)", DblResult 150)
 
 userFunctionTest10 :: GoodTestCase
-userFunctionTest10 = ("sqrt( f 5 6 )", DblResult 5.477225575051661)
+userFunctionTest10 = ("sqrt( f( 5, 6) )", DblResult 5.477225575051661)
 
 userFunctionTest11 :: GoodTestCase
-userFunctionTest11 = ("f 5 6 + g 1 2 3 + (f 1 2) - 37", DblResult 0)
+userFunctionTest11 = ("f( 5, 6) + g( 1, 2, 3) + f( 1, 2) - 37", DblResult 0)
+
+userFunctionTest12 :: GoodTestCase
+userFunctionTest12 = ("function d x  y = x * y", StrResult "<function>")
+
+userFunctionTest13 :: GoodTestCase
+userFunctionTest13 = ("d  5 6", DblResult 30)
+
+userFunctionTest14 :: GoodTestCase
+userFunctionTest14 = ("x=2.0; y = 3.0", DblResult 3.0)
+
+userFunctionTest15 :: GoodTestCase
+userFunctionTest15 = ("x * d  5 6 + f(5,6) + y", DblResult 93)
+
+userFunctionTest16 :: GoodTestCase
+userFunctionTest16 = ("d 5 6 ^ 2", DblResult 900)
+
+userFunctionTest17 :: GoodTestCase
+userFunctionTest17 = ("function foo a b c = a * b + c"
+                    , StrResult "<function>")
+
+userFunctionTest18 :: GoodTestCase
+userFunctionTest18 = ("a = 100; b = 77; c = 300; foo  1 2 3"
+                    , DblResult 5)
+
+userFunctionTest19 :: GoodTestCase
+userFunctionTest19 = ("a * b + c", DblResult 8000)
+
+userFunctionTest20 :: GoodTestCase
+userFunctionTest20 = ("d 5 6 * g( 1, 2, 3)", DblResult 150)
+
+userFunctionTest21 :: GoodTestCase
+userFunctionTest21 = ("sqrt( d 5 6 )", DblResult 5.477225575051661)
+
+userFunctionTest22 :: GoodTestCase
+userFunctionTest22 = ("f( 5, 6) + foo  1 2 3 + (d 1 2) - 37", DblResult 0)
 
