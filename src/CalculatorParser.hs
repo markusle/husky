@@ -82,7 +82,7 @@ update_var :: CharParser CalcState String
            -> CharParser CalcState Double
 update_var name_p val_p = name_p
        >>= \name -> val_p
-       >>= \val  -> updateState (insert_variable val name)
+       >>= \val  -> updateState (insert_variable name val)
        >> return val
 
 
@@ -255,22 +255,24 @@ functionString = many anyChar
 -- function somewhat, e.g., do the parameters match etc
 define_function :: CharParser CalcState ParseResult
 define_function = add_function parse_function_name parse_vars 
-                  parse_function_def
+                               parse_function_def 
+                  *> pure (StrResult "<function>")
               
   where
-    add_function name_parser var_parser expr_parser = name_parser
-      >>= \name -> var_parser 
-      >>= \vars -> expr_parser
-      >>= \expr -> updateState (insert_function vars expr name)
-      >> return (StrResult "<function>") 
-    
+    add_function name_parser var_parser expr_parser =
+      join $ updateState <$> 
+      (insert_function <$> name_parser <*> var_parser <*> expr_parser) 
+
+
     parse_function_name = (whiteSpace *> reserved "function" 
                            *> whiteSpace *> variable <* whiteSpace)
+
 
     -- | we allow both f(x,y) and haskell style f x y function 
     -- definitions
     parse_vars = (parens ((variable <* whiteSpace) `sepBy` comma))
               <|> many (variable <* whiteSpace)
+
 
     parse_function_def = (whiteSpace *> reservedOp "=" *> whiteSpace 
                           *> functionString)
@@ -311,8 +313,8 @@ parse_user_functions =
       >> parens add_term 
       >>= \result -> updateState clear_stack
       >> return result
- 
-                    
+
+                   
     -- | retrieve the function expression corresponding to a
     -- particular function name
     get_function_expression name = getState
@@ -320,6 +322,7 @@ parse_user_functions =
           case M.lookup name myMap of
             Nothing -> pzero
             Just a  -> return a
+
 
     -- | check if the number of expected and provided arguments
     -- match and push the variables on the local stack so the
@@ -329,9 +332,4 @@ parse_user_functions =
           then pzero
           else mapM_ (updateState . push_to_stack) 
                      (zip target_vars vars)
-
-               
-    
-
-
 

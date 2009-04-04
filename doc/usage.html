@@ -294,7 +294,7 @@ ul.auto-toc {
 <tr><th class="docinfo-name">Author:</th>
 <td>Markus Dittrich</td></tr>
 <tr><th class="docinfo-name">Version:</th>
-<td>0.3 (03/08/2008)</td></tr>
+<td>0.4 (04/04/2009)</td></tr>
 </tbody>
 </table>
 <div class="section" id="introduction">
@@ -313,6 +313,8 @@ interactive shells of python, octave, or ghci.</p>
 <p>The following sections describe in detail each functionality.</p>
 <div class="section" id="calculator">
 <h2>Calculator</h2>
+<div class="section" id="basic-functionality">
+<h3>Basic Functionality</h3>
 <p>Currently, the mathematical operations &quot;+&quot;, &quot;-&quot;, &quot;*&quot;, and
 &quot;/&quot; are supported with arbitrary nesting of parenthesised
 expressions. All calculations are performed in double
@@ -325,18 +327,66 @@ the following functions are currently supported:</p>
 <li><em>ln, log2, log10</em> : natural, base2, and base10 logarithm</li>
 <li><em>cos, sin, tan, acos, asin, atan</em>: trigonometric functions and inverse</li>
 <li><em>cosh, sinh, tanh, acosh, asinh, atanh</em>: hyperbolic trigonometric functions and inverse</li>
+<li><em>fact n</em>: factorial function. NOTE: <em>n</em> has to be an integer or be convertible to an integer type, i.e., <em>fact 2</em> and <em>fact 2.0</em> are fine but <em>fact 2.1</em> is not.</li>
 </ul>
-<p>Furthermore, users can define any number of variables via</p>
+</div>
+<div class="section" id="variables">
+<h3>Variables</h3>
+<p>Users can define any number of variables via</p>
 <blockquote>
 <em>variable name</em> = value</blockquote>
 <p>where variable name can be any combination of alphanumeric
 characters but has to begin with a letter. Hence, <em>foobar1</em>
 is fine, but <em>1foobar</em> is not. Defined variables can be
-used in expressions and definition of other variables.</p>
+used in expressions and definition of other variables. Users
+can list all currently defined variables via \v (see
+<a class="reference internal" href="#command-shortcuts">Command Shortcuts</a>)</p>
 <p>Since husky uses the GNU readline library all readline
 related functionality is available at husky's interactive
 prompt (including command history). See <a class="footnote-reference" href="#id2" id="id1">[1]</a> for more
 detail.</p>
+</div>
+<div class="section" id="functions">
+<h3>Functions</h3>
+<p>Users can define their own custom functions via the syntax</p>
+<blockquote>
+<em>function &lt;function name&gt; &lt;list of variables&gt; = &lt;expression&gt;</em></blockquote>
+<p>Here, the list of variables can either be a comma separated list
+of variable names enclosed in parentheses or a simple list of
+variables separated by whitespace without parentheses like in
+Haskell. The following expressions are valid and equivalent
+function definitions</p>
+<pre class="literal-block">
+f(x,y) = x * y
+f x y  = x * x
+</pre>
+<p>Several restrictions currently apply to function definitions:</p>
+<ul class="simple">
+<li><em>&lt;expression&gt;</em> can only span a single line and will be parsed
+until the end of the line.</li>
+<li><em>&lt;expression&gt;</em> has to be a single expression, i.e., it can <strong>not</strong>
+contain a list of semicolon separated expressions.</li>
+</ul>
+<p>Functions which have been defined can then be called according to
+the same conventions used for function definitions. Hence, function
+f as defined above can be called via</p>
+<blockquote>
+f(3,2) or f 3 2</blockquote>
+<p>Here, the calling method does not depend on the way the function
+was defined, i.e., a function could be defined the Haskell way and
+then be called via f(x,y). The function arguments can either be
+literals or constants that have been defined previously. Hence,
+the following husky session is valid</p>
+<pre class="literal-block">
+a = 3
+b = 4
+function f x y = x * y
+f(a,b)
+</pre>
+<p>will yield the value &quot;12.0&quot;.</p>
+<p>Users can list all presently defined function via \f (see
+<a class="reference internal" href="#command-shortcuts">Command Shortcuts</a>).</p>
+</div>
 </div>
 <div class="section" id="unit-converter">
 <h2>Unit Converter</h2>
@@ -367,6 +417,7 @@ is optional. E.g.:</p>
 <ul class="simple">
 <li>\q       : quit husky</li>
 <li>\v       : list all currently defined variables</li>
+<li>\f       : list all currently defined functions</li>
 <li>\t       : current time</li>
 <li>\h[elp]  : available help</li>
 </ul>

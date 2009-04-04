@@ -86,16 +86,16 @@ clear_stack state = state { funcStack = M.empty }
 
 -- | function adding a new variable into the calculator state
 -- database
-insert_variable :: Double -> String -> CalcState -> CalcState
-insert_variable num name state@(CalcState {varMap = theMap}) =
+insert_variable :: String -> Double -> CalcState -> CalcState
+insert_variable name num state@(CalcState {varMap = theMap}) =
     state { varMap = M.insert name num theMap } 
 
 
 -- | insert a user definied function into the calculator state
 -- database
-insert_function :: [String] -> String -> String -> CalcState 
+insert_function :: String -> [String] -> String -> CalcState 
                 -> CalcState
-insert_function vars expr name state@(CalcState {funcMap = theMap}) =
+insert_function name vars expr state@(CalcState {funcMap = theMap}) =
     state { funcMap = M.insert name theFunc theMap }
   where
     theFunc = Function { f_vars = vars, f_expression = expr } 
