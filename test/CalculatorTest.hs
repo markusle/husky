@@ -498,7 +498,11 @@ userFunctionTests = [ userFunctionTest1, userFunctionTest2
                     , userFunctionTest15, userFunctionTest16
                     , userFunctionTest17, userFunctionTest18
                     , userFunctionTest19, userFunctionTest20
-                    , userFunctionTest21, userFunctionTest22] 
+                    , userFunctionTest21, userFunctionTest22
+                    , userFunctionTest23, userFunctionTest24
+                    , userFunctionTest25, userFunctionTest26
+                    , userFunctionTest27, userFunctionTest28] 
+ 
 
 -- list of user defined function tests
 userFunctionTest1 :: GoodTestCase
@@ -571,3 +575,21 @@ userFunctionTest21 = ("sqrt( d 5 6 )", DblResult 5.477225575051661)
 userFunctionTest22 :: GoodTestCase
 userFunctionTest22 = ("f( 5, 6) + foo  1 2 3 + (d 1 2) - 37", DblResult 0)
 
+userFunctionTest23 :: GoodTestCase
+userFunctionTest23 = ("a = 10; b = 5", DblResult 5)
+
+userFunctionTest24 :: GoodTestCase
+userFunctionTest24 = ("function bar a b c = a * b + c"
+                    , StrResult "<function>")
+
+userFunctionTest25 :: GoodTestCase
+userFunctionTest25 = ("bar a a b", DblResult 105)
+
+userFunctionTest26 :: GoodTestCase
+userFunctionTest26 = ("bar(a,b,b)", DblResult 55)
+
+userFunctionTest27 :: GoodTestCase
+userFunctionTest27 = ("bar(a,1,2) * bar(b,4,a)", DblResult 360)
+
+userFunctionTest28 :: GoodTestCase
+userFunctionTest28 = ("sqrt( bar 1 1 1 )", DblResult 1.4142135623730951)
