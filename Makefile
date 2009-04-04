@@ -17,7 +17,7 @@ OBJECTS = src/husky.hs src/CalculatorParser.hs src/CalculatorState.hs \
 	  src/UnitConverter.hs src/UnitConversionParser.hs
 	  
 
-all: debug
+all: husky
 
 husky: $(OBJECTS) 
 	ghc -i./src $(GHC_FLAGS_RELEASE) --make src/husky.hs
