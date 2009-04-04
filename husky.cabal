@@ -10,7 +10,7 @@ Description:   husky is a command line calculator with a small memory
                interactive shells of python, octave, or ruby.   
 Author:        Markus Dittrich <haskelladdict@gmail.com>
 Maintainer:    Markus Dittrich <haskelladdict@gmail.com>
-stability:     alpha
+stability:     beta
 build-type:    Simple
 Homepage:      http://github.com/markusle/husky/tree/master
 cabal-version: >= 1.2.1
