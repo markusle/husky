@@ -294,9 +294,12 @@ parse_user_functions =
   where
     -- | arguments can either be applied via f(x,y) or the haskell
     -- way f x y
-    parse_arguments = parens ((parse_number <* whiteSpace) `sepBy` 
-                              comma) 
-                   <|> many (parse_number <* whiteSpace)
+    parse_arguments = parens ((parse_arg <* whiteSpace) `sepBy` comma) 
+                   <|> many ( parse_arg <* whiteSpace )
+      
+      where
+        parse_arg = (parse_number <|> parse_variable)
+
 
     parse_function_name = (whiteSpace *> variable <* whiteSpace)
 
