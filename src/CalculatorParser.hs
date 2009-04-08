@@ -101,6 +101,23 @@ exp_term :: CharParser CalcState Double
 exp_term = (whiteSpace *> factor) `chainl1` exp_action
 
 
+-- | chain multiplicative of divisive statements
+multiply_action :: CharParser CalcState (Double -> Double -> Double)
+multiply_action = (reservedOp "*" *> pure (*))
+               <|> (reservedOp "/" *> pure (/))
+
+
+-- | chain additive or subtractive statements
+add_action :: CharParser CalcState (Double -> Double -> Double)
+add_action = (reservedOp "+" *> pure (+))
+          <|> (reservedOp "-" *> pure (-))
+
+
+-- | parse an exponentiation term
+exp_action :: CharParser CalcState (Double -> Double -> Double)
+exp_action = reservedOp "^" *> pure real_exp
+
+
 -- | parser for individual factors, i.e, numbers,
 -- variables or operations
 factor :: CharParser CalcState Double
@@ -145,37 +162,29 @@ parse_functions_int :: CharParser CalcState Double
 parse_functions_int = msum $ extract_ops_int builtinFunctionsInt
 
   where
-    extract_ops_int :: [(String, Integer -> Integer)] 
+    extract_ops_int :: [(String, Bool, Integer -> Integer)] 
                     -> [CharParser CalcState Double]
-    extract_ops_int = foldr (\(x,y) acc -> 
-                             ((reserved x *> execute_int y):acc)) []
+    extract_ops_int = foldr (\(x,y,z) acc -> 
+                             ((reserved x *> execute_int y z):acc)) []
 
-    execute_int op  =  fromInteger . op <$> (  parens add_term 
-                                           <|> parse_single_number 
-                                           <|> parse_variable 
-                                               >>= evaluate_int )
+    execute_int need_pos op = fromInteger . op <$> 
+                            (  parens add_term 
+                           <|> parse_single_number 
+                           <|> parse_variable 
+                               >>= if need_pos
+                                     then to_positive_int
+                                     else to_int)
 
-    evaluate_int =  \val -> case is_non_negative_int val of
-                              Just a -> return a
-                              Nothing -> pzero 
-                    <?> "non-negative integer value" 
-
-
--- | chain multiplicative of divisive statements
-multiply_action :: CharParser CalcState (Double -> Double -> Double)
-multiply_action = (reservedOp "*" *> pure (*))
-               <|> (reservedOp "/" *> pure (/))
+    to_int = \val -> case is_int val of
+                       Just a  -> return a
+                       Nothing -> pzero
+          <?> "integer value"
 
 
--- | chain additive or subtractive statements
-add_action :: CharParser CalcState (Double -> Double -> Double)
-add_action = (reservedOp "+" *> pure (+))
-          <|> (reservedOp "-" *> pure (-))
-
-
--- | parse an exponentiation term
-exp_action :: CharParser CalcState (Double -> Double -> Double)
-exp_action = reservedOp "^" *> pure real_exp
+    to_positive_int = \val -> case is_positive_int val of
+                           Just a  -> return a
+                           Nothing -> pzero 
+                   <?> "non-negative integer value" 
 
 
 -- | parse a single number; integers are automatically promoted 

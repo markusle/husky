@@ -23,6 +23,7 @@ module TokenParser ( module Control.Applicative
                    , module Text.ParserCombinators.Parsec
                    , builtinFunctions
                    , builtinFunctionsInt
+                   , builtinFunctionsInt_Int
                    , comma
                    , charLiteral
                    , float
@@ -87,8 +88,9 @@ data ParseResult =
 
 -- | these are all the names and corresponding functions
 -- of keywords we know about
-type OperatorAction    = (Double -> Double)
-type OperatorActionInt = (Integer -> Integer)
+type OperatorAction        = (Double -> Double)
+type OperatorActionInt     = (Integer -> Integer)
+type OperatorActionInt_Int = (Integer -> Integer -> Integer)
 
 
 -- | builtin functions of the form (Double -> Double)
@@ -115,9 +117,19 @@ builtinFunctions = [ ("sqrt",sqrt)
 -- | builtin function of the type (Integer -> Double) that need
 -- type conversion from Int to Double. This is a separate category
 -- since in the parser we need to explicitly check the the
+-- user entered an Int and fail otherwise.
+-- The Bool argument indicates if the function expects positive
+-- integers or not.
+builtinFunctionsInt :: [(String, Bool, OperatorActionInt)]
+builtinFunctionsInt = [ ("fact", True, fact) ]
+
+
+-- | builtin function of the type (Integer -> Integer -> Double) which
+-- need type conversion from Int to Double. This is a separate category
+-- since in the parser we need to explicitly check the the
 -- user entered an Int and fail otherwise
-builtinFunctionsInt :: [(String, OperatorActionInt)]
-builtinFunctionsInt = [("fact", fact)]
+builtinFunctionsInt_Int :: [(String, OperatorActionInt_Int)]
+builtinFunctionsInt_Int = [ ("mod", mod) ]
 
 
 -- | all other keywords that are not regular functions
@@ -135,8 +147,8 @@ lexer  = PT.makeTokenParser
          ( haskellDef { reservedOpNames = operators
                       , opLetter      = oneOf "*+/^"
                       , reservedNames = keywords 
-                                        ++ map fst builtinFunctions 
-                                        ++ map fst builtinFunctionsInt
+                            ++ map fst builtinFunctions 
+                            ++ map (\(x,_,_) -> x) builtinFunctionsInt
                       } )
 
 

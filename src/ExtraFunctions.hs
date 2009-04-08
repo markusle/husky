@@ -22,7 +22,8 @@
 -- | definition of additional math and helper functions
 module ExtraFunctions ( fact 
                       , is_equal
-                      , is_non_negative_int
+                      , is_int
+                      , is_positive_int
                       , real_exp 
                       ) where
 
@@ -51,8 +52,17 @@ is_equal x y = abs(x-y) <= abs(x) * dbl_epsilon
 -- Integer via floor and the compare if the numbers are identical.
 -- If yes, the number seems to be an Integer and we return it,
 -- otherwise Nothing
-is_non_negative_int :: Double -> Maybe Integer
-is_non_negative_int x = 
+is_positive_int :: Double -> Maybe Integer
+is_positive_int x = 
+  case (is_equal (fromInteger . floor $ x) x) && (x > 0.0) of
+    True  -> Just $ floor x
+    False -> Nothing
+
+
+-- | function checking if a Double can be interpreted as an
+-- Integer. See is_positive_int for more detail
+is_int :: Double -> Maybe Integer
+is_int x = 
   case is_equal (fromInteger . floor $ x) x of
     True  -> Just $ floor x
     False -> Nothing
@@ -73,3 +83,4 @@ real_exp a x = realToFrac $ c_pow (realToFrac a) (realToFrac x)
 fact :: Integer -> Integer
 fact 0 = 1
 fact n = n * fact (n-1)
+
