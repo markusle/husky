@@ -393,7 +393,9 @@ functionTests :: [GoodTestCase]
 functionTests = [ functionTest1, functionTest2, functionTest3
                 , functionTest4, functionTest5, functionTest6
                 , functionTest7, functionTest8, functionTest9
-                , functionTest10, functionTest11]
+                , functionTest10, functionTest11, functionTest12
+                , functionTest13, functionTest14, functionTest15
+                , functionTest16 ]
 
 -- list of variable tests
 functionTest1 :: GoodTestCase
@@ -429,6 +431,25 @@ functionTest10 = ("cos(-0.5)", DblResult 0.8775825618903728)
 functionTest11 :: GoodTestCase
 functionTest11 = ("cos 0.5 - cos -0.5", DblResult 0)
 
+functionTest12 :: GoodTestCase
+functionTest12 = ("fact 3", DblResult 6.0)
+
+functionTest13 :: GoodTestCase
+functionTest13 = ("fact 20", DblResult 2.43290200817664e18)
+
+functionTest14 :: GoodTestCase
+functionTest14 = ("mod 25 7", DblResult 4)
+
+functionTest15 :: GoodTestCase
+functionTest15 = ("div 25 7", DblResult 3)
+
+functionTest16 :: GoodTestCase
+functionTest16 = ("mod 25 (-7)", DblResult (-3.0)) 
+
+functionTest17 :: GoodTestCase
+functionTest17 = ("div 25 (-7)", DblResult (-4.0))
+
+
 
 -- a few tests that are failing 
 failingTests :: [FailingTestCase]
@@ -436,7 +457,8 @@ failingTests = [ failingTest1, failingTest2, failingTest3
                , failingTest4, failingTest5, failingTest6
                , failingTest7, failingTest8, failingTest9
                , failingTest10, failingTest11, failingTest12
-               , failingTest13, failingTest14, failingTest15 ]
+               , failingTest13, failingTest14, failingTest15
+               , failingTest16, failingTest17, failingTest18 ]
 
 -- list of failing tests
 failingTest1 :: FailingTestCase
@@ -483,6 +505,17 @@ failingTest14 = ("(3+3;4+4)")
 
 failingTest15 :: FailingTestCase
 failingTest15 = ("3+3, 3+3")
+
+failingTest16 :: FailingTestCase
+failingTest16 = ("fact (-1)")
+
+failingTest17 :: FailingTestCase
+failingTest17 = ("mod 4")
+
+failingTest18 :: FailingTestCase
+failingTest18 = ("div 4")
+
+
 
 
 -- a few tests for testing proper parsing of user defined
