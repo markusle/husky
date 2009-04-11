@@ -126,7 +126,8 @@ builtinFunctions_int = [ ("fact", to_positive_int, fact) ]
 -- function arguments are converted to Integer values
 builtinFunctions_2int :: [(String, (Double -> Maybe Integer)
                          , Integer -> Integer -> Integer )]
-builtinFunctions_2int = [ ("mod", to_int, mod) ]
+builtinFunctions_2int = [ ("mod", to_int, mod)
+                        , ("div", to_int, div) ]
 
 
 -- | all other keywords that are not regular functions
