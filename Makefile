@@ -47,4 +47,4 @@ install: husky
 
 clean:
 	rm -f src/*.o src/*.hi src/husky test/*.o test/*.hi \
-		test/CalculatorTest
+		test/CalculatorTest test/ConverterTest
