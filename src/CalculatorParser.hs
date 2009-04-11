@@ -125,6 +125,7 @@ factor = try signed_parenthesis
       <|> try parse_user_functions
       <|> parse_functions
       <|> parse_functions_int 
+      <|> parse_functions_2int
       <|> try parse_single_number  -- need try because of possible
                                    -- unitary '-'
       <|> try parse_stack          -- always parse stack first since
@@ -159,32 +160,83 @@ parse_functions = msum $ extract_ops builtinFunctions
 -- hack. In a nutshell, we check if a Double can be interpreted
 -- as an Integer and then use (of fail the parse)
 parse_functions_int :: CharParser CalcState Double
-parse_functions_int = msum $ extract_ops_int builtinFunctionsInt
+parse_functions_int = msum $ extract_ops_int builtinFunctions_int
 
   where
-    extract_ops_int :: [(String, Bool, Integer -> Integer)] 
+    -- need type signature for monomorphism restriction
+    extract_ops_int :: [ (String, (Double -> Maybe Integer)
+                       , Integer -> Integer)] 
                     -> [CharParser CalcState Double]
     extract_ops_int = foldr (\(x,y,z) acc -> 
-                             ((reserved x *> execute_int y z):acc)) []
-
-    execute_int need_pos op = fromInteger . op <$> 
-                            (  parens add_term 
-                           <|> parse_single_number 
-                           <|> parse_variable 
-                               >>= if need_pos
-                                     then to_positive_int
-                                     else to_int)
-
-    to_int = \val -> case is_int val of
-                       Just a  -> return a
-                       Nothing -> pzero
-          <?> "integer value"
+      ((reserved x *> execute_int y z):acc)) []
 
 
-    to_positive_int = \val -> case is_positive_int val of
-                           Just a  -> return a
-                           Nothing -> pzero 
-                   <?> "non-negative integer value" 
+    execute_int conv op = fromInteger . op <$>  
+      convert_to_int conv argument_parser
+
+
+    -- function trying to convert a double to a type of Int via
+    -- a function (Double -> Maybe Int) 
+    convert_to_int p double_parser = 
+      double_parser 
+      >>= \d -> case p d of
+                  Just a  -> return a
+                  Nothing -> pzero
+     <?> "integer value"
+
+
+    -- parser for 1 function argument
+    argument_parser = ( parens add_term 
+                      <|> parse_single_number 
+                      <|> parse_variable ) 
+                    <?> "function argument"
+
+
+-- | parse all operations of type (Int -> Int -> Int) we currently 
+-- know about
+-- NOTE: They way we do things right now to deal with Integers
+-- in the framework of our Double parser is somewhat of a 
+-- hack. In a nutshell, we check if a Double can be interpreted
+-- as an Integer and then use (of fail the parse)
+parse_functions_2int :: CharParser CalcState Double
+parse_functions_2int = msum $ extract_ops_int builtinFunctions_2int
+
+  where
+    -- need type signature for monomorphism restriction
+    extract_ops_int :: [ (String, (Double -> Maybe Integer)
+                       , Integer -> Integer -> Integer)] 
+                    -> [CharParser CalcState Double]
+    extract_ops_int = foldr (\(x,y,z) acc -> 
+      ((reserved x *> execute_int y z):acc)) []
+
+
+    execute_int conv op = fromInteger . uncurry op <$>  
+      convert_to_2int conv 
+
+
+    -- function trying to convert a double to a type of Int via
+    -- a function (Double -> Maybe Int) 
+    convert_to_2int p =  
+      (evaluate <$> argument_parser <*> argument_parser) 
+      >>= \val -> case val of
+                    Just i -> return i
+                    _      -> pzero
+
+      <?> "integer value"
+     
+       where 
+         evaluate a1 a2 = let result = (p a1, p a2) in
+                            case result of
+                              (Just i, Just j) -> Just (i,j)
+                              _                -> Nothing
+
+ 
+    -- parser for >1 function arguments
+    argument_parser = ( parens add_term 
+                      <|> parse_number 
+                      <|> parse_variable ) 
+                    <?> "function argument"
+       
 
 
 -- | parse a single number; integers are automatically promoted 

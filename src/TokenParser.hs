@@ -22,8 +22,8 @@
 module TokenParser ( module Control.Applicative
                    , module Text.ParserCombinators.Parsec
                    , builtinFunctions
-                   , builtinFunctionsInt
-                   , builtinFunctionsInt_Int
+                   , builtinFunctions_int
+                   , builtinFunctions_2int
                    , comma
                    , charLiteral
                    , float
@@ -32,7 +32,6 @@ module TokenParser ( module Control.Applicative
                    , keywords
                    , lexer
                    , naturalOrFloat
-                   , OperatorAction
                    , ParseResult(..)
                    , operators
                    , reservedOp
@@ -46,6 +45,7 @@ module TokenParser ( module Control.Applicative
 -- imports
 import Control.Applicative
 import Control.Monad (ap, MonadPlus (..))
+import ExtraFunctions
 import Prelude
 import Text.ParserCombinators.Parsec hiding (many,optional, (<|>)) 
 import qualified Text.ParserCombinators.Parsec.Token as PT
@@ -86,15 +86,8 @@ data ParseResult =
 
 {- set up the Token Parser -}
 
--- | these are all the names and corresponding functions
--- of keywords we know about
-type OperatorAction        = (Double -> Double)
-type OperatorActionInt     = (Integer -> Integer)
-type OperatorActionInt_Int = (Integer -> Integer -> Integer)
-
-
 -- | builtin functions of the form (Double -> Double)
-builtinFunctions :: [(String, OperatorAction)]
+builtinFunctions :: [(String, Double -> Double)]
 builtinFunctions = [ ("sqrt",sqrt)
                    , ("exp",exp) 
                    , ("log",log)
@@ -118,18 +111,22 @@ builtinFunctions = [ ("sqrt",sqrt)
 -- type conversion from Int to Double. This is a separate category
 -- since in the parser we need to explicitly check the the
 -- user entered an Int and fail otherwise.
--- The Bool argument indicates if the function expects positive
--- integers or not.
-builtinFunctionsInt :: [(String, Bool, OperatorActionInt)]
-builtinFunctionsInt = [ ("fact", True, fact) ]
+-- The (Double -> Maybe Integer) argument is a function with which
+-- function arguments are converted to Integer values
+builtinFunctions_int :: [ (String, (Double -> Maybe Integer)
+                        , Integer -> Integer )]
+builtinFunctions_int = [ ("fact", to_positive_int, fact) ]
 
 
 -- | builtin function of the type (Integer -> Integer -> Double) which
 -- need type conversion from Int to Double. This is a separate category
 -- since in the parser we need to explicitly check the the
 -- user entered an Int and fail otherwise
-builtinFunctionsInt_Int :: [(String, OperatorActionInt_Int)]
-builtinFunctionsInt_Int = [ ("mod", mod) ]
+-- The (Double -> Maybe Integer) argument is a function with which
+-- function arguments are converted to Integer values
+builtinFunctions_2int :: [(String, (Double -> Maybe Integer)
+                         , Integer -> Integer -> Integer )]
+builtinFunctions_2int = [ ("mod", to_int, mod) ]
 
 
 -- | all other keywords that are not regular functions
@@ -148,8 +145,11 @@ lexer  = PT.makeTokenParser
                       , opLetter      = oneOf "*+/^"
                       , reservedNames = keywords 
                             ++ map fst builtinFunctions 
-                            ++ map (\(x,_,_) -> x) builtinFunctionsInt
+                            ++ map name builtinFunctions_int
+                            ++ map name builtinFunctions_2int
                       } )
+  where
+    name = \(x,_,_) -> x
 
 
 -- | token parser for parenthesis
