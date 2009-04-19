@@ -32,7 +32,7 @@ import ExtraFunctions
 import Prelude
 import TokenParser
 
---import Debug.Trace
+import Debug.Trace
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState ParseResult
@@ -122,7 +122,7 @@ exp_action = reservedOp "^" *> pure real_exp
 -- variables or operations
 factor :: CharParser CalcState Double
 factor = try signed_parenthesis
-      <|> try parse_user_functions
+      <|> parse_user_functions
       <|> parse_functions
       <|> parse_functions_int 
       <|> parse_functions_2int
@@ -130,7 +130,7 @@ factor = try signed_parenthesis
                                    -- unitary '-'
       <|> try parse_stack          -- always parse stack first since
                                    -- local variables hide global ones
-      <|> parse_variable           
+      <|> (trace ("are here") parse_variable)
       <?> "token or variable"         
 
 
@@ -268,8 +268,7 @@ parse_sign = option 1.0 ( whiteSpace *> char '-' *> pure (-1.0) )
 -- | look for the value of a given variable if any
 parse_variable :: CharParser CalcState Double
 parse_variable = (*) <$> (parse_sign <* whiteSpace) <*>
-                 (get_variable_value variable <* whiteSpace)
-              <?> "variable"
+                 (get_variable_value variable <* whiteSpace) 
 
 
 -- | function retrieving a variable from the database if
@@ -279,20 +278,21 @@ get_variable_value :: CharParser CalcState String
 get_variable_value name_parser = getState 
   >>= \(CalcState { varMap = myMap }) -> name_parser
   >>= \name -> case M.lookup name myMap of
-                 Nothing -> pzero
+                 Nothing -> fail $ "variable " ++ name ++ " undefined"
                  Just a  -> return a
                             
 
 -- | this is how valid variable names have to look like
 variable :: CharParser CalcState String
-variable = (:) <$> letter <*> many alphaNum
+variable = ((:) <$> letter <*> many (alphaNum <?> ""))
+        <?> "variable"
 
 
 -- | look for the value of a given stack variable
 parse_stack :: CharParser CalcState Double
 parse_stack = (*) <$> (parse_sign <* whiteSpace) <*>
                  (get_stack_variable variable <* whiteSpace)
-              <?> "variable"
+              <?> "stack variable"
 
 
 -- | function retrieving a variable from the database if
@@ -318,7 +318,7 @@ define_function :: CharParser CalcState ParseResult
 define_function = add_function parse_function_name parse_vars 
                                parse_function_def 
                   *> pure (StrResult "<function>")
-              
+
   where
     add_function name_parser var_parser expr_parser =
       join $ updateState <$> 
@@ -362,23 +362,10 @@ parse_user_functions =
         parse_arg = (parse_number <|> parse_variable)
 
 
-    parse_function_name = (whiteSpace *> variable <* whiteSpace)
+    parse_function_name = join $ get_function_expression 
+                          <$> (whiteSpace *> variable <* whiteSpace)
 
 
-    -- | substitute a function expression into the current parse
-    -- string
-    substitute_function name_parser var_parser = name_parser
-      >>= get_function_expression
-      >>= \(Function { f_vars = target_vars
-                     , f_expression = expr } ) -> var_parser
-      >>= \vars -> push_vars_to_stack vars target_vars
-      >> getInput
-      >>= \inp  -> setInput ("(" ++ expr ++ ")" ++ inp)
-      >> parens add_term 
-      >>= \result -> updateState clear_stack
-      >> return result
-
-                   
     -- | retrieve the function expression corresponding to a
     -- particular function name
     get_function_expression name = getState
@@ -388,6 +375,20 @@ parse_user_functions =
             Just a  -> return a
 
 
+    -- | substitute a function expression into the current parse
+    -- string
+    substitute_function name_parser var_parser = try name_parser
+      >>= \(Function { f_vars = target_vars
+                     , f_expression = expr } ) -> try var_parser
+      >>= \vars -> push_vars_to_stack vars target_vars
+      >> getInput
+      >>= \inp  -> setInput ("(" ++ expr ++ ")" ++ inp)
+      >> parens add_term 
+      >>= \result -> updateState clear_stack
+      >> return result
+
+                   
+    
     -- | check if the number of expected and provided arguments
     -- match and push the variables on the local stack so the
     -- parser can replace the parameters while parsing 
