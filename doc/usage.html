@@ -365,7 +365,7 @@ f x y  = x * x
 <li><em>&lt;expression&gt;</em> can only span a single line and will be parsed
 until the end of the line.</li>
 <li><em>&lt;expression&gt;</em> has to be a single expression, i.e., it can <strong>not</strong>
-contain a list of semicolon separated expressions.</li>
+contain a list of semicolon separated sub-expressions.</li>
 </ul>
 <p>Functions which have been defined can then be called according to
 the same conventions used for function definitions. Hence, function
@@ -384,7 +384,7 @@ function f x y = x * y
 f(a,b)
 </pre>
 <p>will yield the value &quot;12.0&quot;.</p>
-<p>Users can list all presently defined function via \f (see
+<p>Users can list all currently defined function via \f (see
 <a class="reference internal" href="#command-shortcuts">Command Shortcuts</a>).</p>
 </div>
 </div>
@@ -420,6 +420,23 @@ is optional. E.g.:</p>
 <li>\f       : list all currently defined functions</li>
 <li>\t       : current time</li>
 <li>\h[elp]  : available help</li>
+</ul>
+</div>
+<div class="section" id="known-bugs">
+<h1>Known Bugs</h1>
+<ul>
+<li><p class="first">Presently, function definitions can not be nested since only
+a single level will be parsed, i.e.</p>
+<p>function foo x = 3 * x
+function bar y = foo y</p>
+<p>will result in a parse error for bar.</p>
+</li>
+<li><p class="first">The location reporting for parse errors in functions currently is
+incorrect. Since function expressions are interpolated into
+the parser stream during runtime we do not really know how the
+final expanded stream looks like. This mean we can't use the
+parsers internal counter to pinpoint the exact point of failure.</p>
+</li>
 </ul>
 </div>
 <div class="section" id="copyright-and-license">

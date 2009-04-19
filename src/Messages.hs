@@ -67,7 +67,7 @@ print_error_message err line = highlight_error
                                >> putStr (parse_error err)
                          
   where
-    parse_error = unlines . lines 
+    parse_error = unlines . tail . lines 
 
     -- | highlight the position where the error occurs
     -- if we can't determine it we simply echo the input line

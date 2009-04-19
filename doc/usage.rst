@@ -154,6 +154,24 @@ The following commands are available at the command prompt:
 - \\h[elp]  : available help
 
 
+Known Bugs
+----------
+
+- Presently, function definitions can not be nested since only
+  a single level will be parsed, i.e.
+
+  function foo x = 3 * x
+  function bar y = foo y
+
+  will result in a parse error for bar.
+
+- The location reporting for parse errors in functions currently is
+  incorrect. Since function expressions are interpolated into
+  the parser stream during runtime we do not really know how the
+  final expanded stream looks like. This mean we can't use the
+  parsers internal counter to pinpoint the exact point of failure.
+
+
 COPYRIGHT and LICENSE
 ---------------------
 

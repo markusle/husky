@@ -388,8 +388,7 @@ parse_user_functions =
       >>= \result -> updateState clear_stack
       >> return result
 
-                   
-    
+                  
     -- | check if the number of expected and provided arguments
     -- match and push the variables on the local stack so the
     -- parser can replace the parameters while parsing 
