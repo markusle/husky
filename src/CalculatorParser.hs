@@ -18,7 +18,7 @@
 
 --------------------------------------------------------------------}
 
--- | main archy driver
+-- | main calculator parser
 module CalculatorParser ( calculator_parser ) where
 
 
@@ -32,7 +32,8 @@ import ExtraFunctions
 import Prelude
 import TokenParser
 
-import Debug.Trace
+--import Debug.Trace
+
 
 -- | grammar description for calculator parser
 calculator_parser :: CharParser CalcState ParseResult
@@ -130,7 +131,7 @@ factor = try signed_parenthesis
                                    -- unitary '-'
       <|> try parse_stack          -- always parse stack first since
                                    -- local variables hide global ones
-      <|> (trace ("are here") parse_variable)
+      <|> parse_variable
       <?> "token or variable"         
 
 

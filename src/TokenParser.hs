@@ -38,6 +38,7 @@ module TokenParser ( module Control.Applicative
                    , reserved
                    , semi
                    , stringLiteral
+                   , symbol
                    , whiteSpace
                    ) where
 
@@ -187,13 +188,16 @@ naturalOrFloat = PT.naturalOrFloat lexer
 reservedOp :: String -> CharParser st ()
 reservedOp = PT.reservedOp lexer
 
+
 -- | token parser for keywords
 reserved :: String -> CharParser st ()
 reserved = PT.reserved lexer
 
+
 -- | token parser for whitespace
 whiteSpace :: CharParser st ()
 whiteSpace = PT.whiteSpace lexer
+
 
 -- | token parser for semicolon
 semi :: CharParser st String
@@ -203,4 +207,9 @@ semi = PT.semi lexer
 -- | token parser for comma
 comma :: CharParser st String
 comma = PT.comma lexer
+
+
+-- | token parser for symbol
+symbol :: String -> CharParser st String
+symbol = PT.symbol lexer
 

@@ -83,7 +83,7 @@ parse_it state = do
           -- parse it as a calculation or unit conversion
           case runParser main_parser state "" line of
 
-            Left er  -> print_error_message (show er) 
+            Left er  -> print_error_message (show er) line 
                         >> parse_it state
 
             {- if the parser succeeds we do one of the following:

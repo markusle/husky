@@ -29,8 +29,10 @@ module Messages ( husky_result
 import System.IO()
 import Prelude 
 
+
 -- local imports
 import PrettyPrint
+import ErrorParser
 
 
 -- | current version
@@ -57,7 +59,27 @@ show_greeting = putStrLn $ banner ++ "\n" ++ infoString ++ banner
   where
     banner = replicate 60 '*'
 
+
 -- | helpful message after bad parse
-print_error_message :: String -> IO ()
-print_error_message er = putStrLn $ "Error: " ++ er 
-                         ++ "\nPlease type \\[h]elp for help."
+print_error_message :: String -> String -> IO ()
+print_error_message err line = highlight_error
+                               >>= putStrLn 
+                               >> putStr (parse_error err)
+                         
+  where
+    parse_error = unlines . lines 
+
+    -- | highlight the position where the error occurs
+    -- if we can't determine it we simply echo the input line
+    highlight_error = extract_error_position err >>= \p -> 
+      case p of
+        Nothing  -> return line
+        Just pos -> return $ highlight_error_h (fromIntegral pos) line
+      
+      where
+        highlight_error_h p l = 
+              (color_string Yellow $ "parse error:\n\n") 
+              ++ ">> " ++ l ++ "\n" ++ ptr
+          
+          where          
+            ptr = (replicate (p-1+3) ' ') ++ "^" 
