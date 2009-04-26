@@ -20,7 +20,9 @@
 --------------------------------------------------------------------}
 
 -- | definition of additional math and helper functions
-module ExtraFunctions ( fact 
+module ExtraFunctions ( erf
+                      , erfc
+                      , fact 
                       , is_equal
                       , to_int
                       , to_positive_int
@@ -83,4 +85,54 @@ real_exp a x = realToFrac $ c_pow (realToFrac a) (realToFrac x)
 fact :: Integer -> Integer
 fact 0 = 1
 fact n = n * fact (n-1)
+
+
+-- | error function erf(x)
+-- we use a recursive solution of the Taylor series expansion
+erf :: Double -> Double
+erf x 
+  | abs(x) > 2.2 = 1.0 - erfc x   -- use erfc for numerical accuracy
+  | otherwise    = 2.0 / sqrt(pi) * (erf_h x x 1.0)
+
+  where
+    x_next n = -(x^2) * (2*n-1)/(n * (2*n+1))
+
+    erf_h old x_old n = let x_new = x_old * (x_next n)
+                            tot   = old + x_new
+                        in
+                          if abs(x_new/tot) < 1e-18
+                          then tot
+                          else erf_h tot x_new (n+1)
+
+
+-- | complementary error function erfc(x) = 1 - erf(x)
+-- we use a recursive solution of the continued fraction
+-- expression of erfc(x) for it superior convergence 
+-- property. Here, we calculate the ith and (i+1)th convergent, (see
+-- http://archives.math.utk.edu/articles/atuyl/confrac/intro.html)
+-- and terminate when the relative difference is smaller than a
+-- certain threshold. 
+erfc :: Double -> Double
+erfc x 
+  | abs(x) < 2.2  = 1.0 - erf(x)   -- use erf(x) in [-2.2,2.2]
+  | signum(x) < 0 = 2.0 - erfc(-x) -- continued fraction expansion
+                                   -- only valid for x > 0
+  | otherwise     = 1/sqrt(pi) * exp(-x^2) 
+                    * (erfc_h nc1 nc2 dc1 dc2 1.0)
+
+  where
+    nc1 = 1.0     :: Double -- numerator of 1st convergent
+    nc2 = x       :: Double -- numerator of 2nd convergent
+    dc1 = x       :: Double -- denominator of 1st convergent
+    dc2 = x^2+0.5 :: Double -- denominator of 2nd convergent
+
+    erfc_h n1 n2 d1 d2 i = 
+      let num_new   = n1*i + n2*x
+          denom_new = d1*i + d2*x
+          d_old     = n2/d2
+          d_new     = num_new/denom_new
+      in
+        if abs((d_old - d_new)/d_new) < 1e-18
+        then d_new
+        else erfc_h n2 num_new d2 denom_new (i+0.5)
 

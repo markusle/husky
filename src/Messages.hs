@@ -37,7 +37,7 @@ import ErrorParser
 
 -- | current version
 version :: String
-version = "0.4"
+version = "0.5"
 
 -- | info string
 infoString :: String
