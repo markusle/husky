@@ -31,8 +31,11 @@ debug: $(OBJECTS)
 check: $(OBJECTS)
 	ghc -i./src --make test/CalculatorTest.hs
 	ghc -i./src --make test/ConverterTest.hs
-	./test/CalculatorTest
-	./test/ConverterTest
+	@./test/CalculatorTest
+	@echo 
+	@echo
+	@echo
+	@./test/ConverterTest
 
 
 install: husky

@@ -24,6 +24,7 @@ module Main where
 
 -- import
 import Control.Monad.Writer
+import Test.QuickCheck
 import System.Exit
 
 
@@ -66,6 +67,10 @@ main = do
   let userFuncs = execWriter $ good_test_driver defaultCalcState 
                   userFunctionTests
   status5 <- examine_output userFuncs
+
+  -- check a few properties via QuickCheck
+  check_erf_erfc
+   
 
   let status = status1 && status2 && status3 && status4 && status5
   if status == True then
@@ -395,7 +400,9 @@ functionTests = [ functionTest1, functionTest2, functionTest3
                 , functionTest7, functionTest8, functionTest9
                 , functionTest10, functionTest11, functionTest12
                 , functionTest13, functionTest14, functionTest15
-                , functionTest16 ]
+                , functionTest16, functionTest17, functionTest18 
+                , functionTest19, functionTest20, functionTest21
+                ]
 
 -- list of variable tests
 functionTest1 :: GoodTestCase
@@ -448,6 +455,25 @@ functionTest16 = ("mod 25 (-7)", DblResult (-3.0))
 
 functionTest17 :: GoodTestCase
 functionTest17 = ("div 25 (-7)", DblResult (-4.0))
+
+functionTest18 :: GoodTestCase
+functionTest18 = ("erf 1.0", DblResult 8.427007929497148e-1)
+
+-- | WARNING: erf from glibc gives 0.9953222650189527, hence
+-- our algorith seems to be off in the last two digits
+functionTest19 :: GoodTestCase
+functionTest19 = ("erf 2.0", DblResult 9.953222650189532e-01)
+
+-- | WARNING: erf from glibc gives -0.9522851197626488, hence
+-- our algorith seems to be off in the last digits
+functionTest20 :: GoodTestCase
+functionTest20 = ("erf (-1.4)", DblResult (-9.522851197626486e-01))
+
+functionTest21 :: GoodTestCase
+functionTest21 = ("erfc(0)", DblResult 1) 
+
+functionTest22 :: GoodTestCase
+functionTest22 = ("erfc  (5)", DblResult 1.53745979442803e-12)
 
 
 
@@ -626,3 +652,35 @@ userFunctionTest27 = ("bar(a,1,2) * bar(b,4,a)", DblResult 360)
 
 userFunctionTest28 :: GoodTestCase
 userFunctionTest28 = ("sqrt( bar 1 1 1 )", DblResult 1.4142135623730951)
+
+
+
+-------------------------------------------------------------------
+-- | Below are properties and wrappers used to test some functions 
+-- (the ones or which I have figured out how to do it) via 
+-- QuickCheck
+-------------------------------------------------------------------
+
+-- | wrapper to test properties for erf and erfc via quickcheck
+check_erf_erfc :: IO ()
+check_erf_erfc =
+  (putStr $ color_string Cyan "\n\nChecking erf = (1 - erfc)\n")
+  >> quickCheck prop_erf_erfc
+
+
+-- | property for erfc = (1 - erf)
+-- NOTE: Due to rounding errors we can not enforce this property
+-- via the full dbl_epsilon but only with 1e-15.
+-- Please make sure that this is good enough.
+prop_erf_erfc :: Double -> Bool
+prop_erf_erfc d =
+  case runParser main_parser defaultCalcState "" $ erf_test d of
+    Left _ -> False
+    Right (DblResult r1,_) ->
+      case runParser main_parser defaultCalcState "" $ erfc_test d of
+        Left _ -> False
+        Right (DblResult r2,_) -> is_equal_with r1 (1.0 - r2) 1e-14
+  
+  where
+    erf_test d = "erf " ++ show d
+    erfc_test d = "erfc " ++ show d

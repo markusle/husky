@@ -24,9 +24,10 @@ module ExtraFunctions ( erf
                       , erfc
                       , fact 
                       , is_equal
+                      , is_equal_with
+                      , real_exp 
                       , to_int
                       , to_positive_int
-                      , real_exp 
                       ) where
 
 
@@ -40,10 +41,14 @@ import Prelude
 dbl_epsilon :: Double
 dbl_epsilon = 2.2204460492503131e-16
 
-
 -- | comparison function for doubles via dbl_epsion
 is_equal :: Double -> Double -> Bool
 is_equal x y = abs(x-y) <= abs(x) * dbl_epsilon
+
+
+-- | comparison function for doubles via threshold
+is_equal_with :: Double -> Double -> Double -> Bool
+is_equal_with x y th = abs(x-y) <= abs(x) * th
 
 
 -- | function checking if a Double can be interpreted as a non
@@ -91,6 +96,8 @@ fact n = n * fact (n-1)
 -- we use a recursive solution of the Taylor series expansion
 erf :: Double -> Double
 erf x 
+  | x == 0.0     = 0.0            -- our recursive alg. loops forever
+                                  -- in this case
   | abs(x) > 2.2 = 1.0 - erfc x   -- use erfc for numerical accuracy
   | otherwise    = 2.0 / sqrt(pi) * (erf_h x x 1.0)
 

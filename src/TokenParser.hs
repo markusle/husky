@@ -107,7 +107,9 @@ builtinFunctions = [ ("sqrt",sqrt)
                    , ("acosh", cosh)
                    , ("atanh", atanh)
                    , ("erf", erf)
-                   , ("erfc", erfc)] 
+                   , ("erfc", erfc)
+                   , ("abs", abs)
+                   ] 
 
 
 -- | builtin function of the type (Integer -> Double) that need
