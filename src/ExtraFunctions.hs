@@ -100,7 +100,7 @@ erf x
     erf_h old x_old n = let x_new = x_old * (x_next n)
                             tot   = old + x_new
                         in
-                          if abs(x_new/tot) < 1e-18
+                          if abs(x_new/tot) < dbl_epsilon
                           then tot
                           else erf_h tot x_new (n+1)
 
@@ -132,7 +132,7 @@ erfc x
           d_old     = n2/d2
           d_new     = num_new/denom_new
       in
-        if abs((d_old - d_new)/d_new) < 1e-18
+        if abs((d_old - d_new)/d_new) < dbl_epsilon
         then d_new
         else erfc_h n2 num_new d2 denom_new (i+0.5)
 
