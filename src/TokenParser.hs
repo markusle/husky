@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {-----------------------------------------------------------------
  
   (c) 2008-2009 Markus Dittrich 
@@ -61,6 +63,8 @@ import ExtraFunctions
 
 
 
+#if (defined(MIN_VERSION_parsec) && MIN_VERSION_parsec(3,0,0))
+#else
 {- Definitions for Applicative Parsec instance -}
 
 -- | Applicative instance for Monad
@@ -73,6 +77,7 @@ instance Applicative (GenParser s a) where
 instance Alternative (GenParser s a) where
   empty = mzero
   (<|>) = mplus
+#endif
 
 
 

@@ -78,7 +78,7 @@ convert_unit value unit1 unit2 unitType =
 -- | helper function looking through all unit maps for a matching
 -- conversion routine
 unit_lookup :: String -> M.Map String UnitMap -> [UnitConverter]
-unit_lookup key = M.fold append_val [] 
+unit_lookup key = M.foldr append_val []
    where
      append_val entry acc = case M.lookup key entry of
                               Nothing -> acc
