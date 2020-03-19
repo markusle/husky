@@ -34,7 +34,6 @@ import Data.Map
 import Data.Time
 import Prelude
 import System.IO
-import System.Locale
 
 
 -- local imports
